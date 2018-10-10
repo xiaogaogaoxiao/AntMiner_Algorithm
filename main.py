@@ -1,6 +1,7 @@
 import pandas as pd
-from data import cDataset
+from dataset import cDataset
 from ant_miner import *
+
 
 def main():
 
@@ -15,9 +16,9 @@ def main():
     class_attr = 'Label'
 
     # Object: DATASET
-    data_SSDP = cDataset(data, class_attr)
+    dataset_SSDP = cDataset(data, class_attr)
 
-    ant_miner(data_SSDP, NO_OF_ANTS, MIN_CASE_PER_RULE, MAX_UNCOVERED_CASES, NO_RULES_CONVERG)
+    ant_miner(dataset_SSDP, NO_OF_ANTS, MIN_CASE_PER_RULE, MAX_UNCOVERED_CASES, NO_RULES_CONVERG)
 
 if __name__ == '__main__':
     main()

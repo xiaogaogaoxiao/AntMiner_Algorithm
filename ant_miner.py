@@ -3,16 +3,18 @@ from terms import *
 
 def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_rules_converg):
 
-    TrainingSet = dataset.data
-    list_of_terms = get_terms(dataset)
+    TrainingSet = dataset
     DiscoveredRuleList = []
 
-    while TrainingSet > max_uncovered_cases:
+    while len(TrainingSet.data) > max_uncovered_cases:
 
+        list_of_terms = get_terms(dataset.data)
         ant_index = 0
         converg_test_index = 0
 
-        PheromoneInit()
+        set_pheromone_init(list_of_terms)
+
+
         HeuristicCalculation()
 
         while True:
