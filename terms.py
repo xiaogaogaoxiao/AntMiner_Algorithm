@@ -65,6 +65,12 @@ class cTerms:
     def set_pheromone(self, data):
         return
 
-    def set_probability(self, data):
+    def set_probability(self, denominator):
+
+        if denominator == 0.0:
+            self.probability = 0
+        else:
+            self.probability = (self.heuristic * self.pheromone) / denominator
+
         return
 

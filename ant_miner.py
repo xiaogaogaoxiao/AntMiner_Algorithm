@@ -1,4 +1,4 @@
-from terms import *
+from functions import *
 
 
 def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_rules_converg):
@@ -20,52 +20,61 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
 
             ant_index += 1
 
-            RuleConstruction()
-            RulePrune()
-            PheromoneUpdating()
+            current_rule_list = []
+            current_rule = cRule(TrainingSet)
 
-            CheckConverg()
+            rule_construction(current_rule, list_of_terms, min_case_per_rule, dataset)
 
-            if ant_index >= no_of_ants or converg_test_index >= no_rules_converg:
+            # RulePrune()
+
+            current_rule_list.append(current_rule)
+
+            # PheromoneUpdating()
+
+            # CheckConverg()
+
+            if ant_index >= no_of_ants:
+                break
+            elif converg_test_index >= no_rules_converg:
                 break
 
-        R_best = ChoosesBestRule()
-        DiscoveredRuleList.append(R_best)
-        covered_cases = get_CoveredCases
-        TrainingSet = TrainingSet - covered_cases
+        # R_best = ChoosesBestRule()
+        # DiscoveredRuleList.append(R_best)
+        # covered_cases = get_CoveredCases
+        # TrainingSet = TrainingSet - covered_cases
 
     return DiscoveredRuleList
 
 
-def get_terms(dict_attr_values):
+def rule_construction(current_rule, list_of_terms, min_case_per_rule, dataset):
 
-    list_of_terms = []
-    for a in dict_attr_values:
-        for v in dict_attr_values[a]:
-            term_obj = cTerms()
-            term_obj.attribute = a
-            term_obj.value = v
-            list_of_terms.append(term_obj)
+    # Antecedent construction
+    while True:
 
-    return list_of_terms
+        if not list_of_terms:
+            break               # verify this line
 
+        set_probability_values(list_of_terms)
 
-def set_pheromone_init(list_of_terms):
+        term_2b_added, term_2b_added_index = sort_term(list_of_terms)
 
-    for term in list_of_terms:
-        term.pheromone = 1/len(list_of_terms)
+        if term_2b_added == None:
+            break
+
+        current_rule.antecedent[term_2b_added.attribute] = term_2b_added.value
+        current_rule.added_terms.append(term_2b_added)
+
+        set_rule_coveredcases(current_rule, dataset)
+
+        if current_rule.no_covered_cases < min_case_per_rule:
+            current_rule.antecedent.popitem()
+            break
+
+        list_of_terms = list_terms_updating(list_of_terms, term_2b_added.attribute)
+
+    # Consequent selection
+    teste = []
+    teste.append(1)
 
     return
 
-
-def set_heuristic_values(list_of_terms, dataset):
-
-    terms_logK_entropy = []
-    for term in list_of_terms:
-        term.set_entropy(dataset)
-        terms_logK_entropy.append(term.logK_entropy)
-
-    for term in list_of_terms:
-        term.set_heuristic(len(dataset.class_values), sum(terms_logK_entropy))
-
-    return
