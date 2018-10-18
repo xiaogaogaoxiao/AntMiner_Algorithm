@@ -59,6 +59,7 @@ def sort_term(list_of_terms):
     terms_prob_sum = 0
     for term in list_of_terms:
         terms_prob_sum = terms_prob_sum + term.probability
+
     if terms_prob_sum == 0:
         return term_chosen, index
 
@@ -73,7 +74,7 @@ def sort_term(list_of_terms):
         if number_sort <= probabilities_sort:
             term_chosen = term
             index = list_of_terms.index(term)
-            return term_chosen, index
+            break
 
     return term_chosen, index
 
@@ -128,10 +129,12 @@ def list_terms_updating(list_of_terms, attribute):
 
 def rule_construction(current_rule, list_of_terms, min_case_per_rule, dataset):
 
-    previous_rule = copy.deepcopy(current_rule)
+    previous_rule = cRule(dataset)
 
     # Antecedent construction
     while True:
+
+        previous_rule = copy.deepcopy(current_rule)
 
         if not list_of_terms:
             break
@@ -152,7 +155,6 @@ def rule_construction(current_rule, list_of_terms, min_case_per_rule, dataset):
             current_rule = copy.deepcopy(previous_rule)
             break
 
-        previous_rule = copy.deepcopy(current_rule)
         list_of_terms = list_terms_updating(list_of_terms, term_2b_added.attribute)
 
     # Consequent selection

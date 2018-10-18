@@ -60,7 +60,14 @@ class cRule:
                 else:
                     tn += 1
 
-        quality = (tp / (tp + fn)) * (tn / (fp + tn))
+        den1 = (tp + fn)
+        den2 = (fp + tn)
+        if den1 == 0:
+            den1 = 0.00001
+        elif den2 == 0:
+            den2 = 0.00001
+
+        quality = (tp / den1) * (tn / den2)
 
         self.quality = quality
 
