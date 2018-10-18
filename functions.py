@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from terms import cTerms
 from rule import cRule
 
@@ -77,20 +78,39 @@ def sort_term(list_of_terms):
     return term_chosen, index
 
 
-def set_rule_coveredcases(current_rule, dataset):
+def set_rule_covered_cases(current_rule, dataset):
 
-    covered_cases = current_rule.covered_cases[:]
     last_added_term_attr = current_rule.added_terms[-1].attribute
 
     cases = []
     attr_idx = dataset.col_index[last_added_term_attr]
-    for case in covered_cases:
+    for case in current_rule.covered_cases:
         if dataset.data[case, attr_idx] == current_rule.added_terms[-1].value:
             cases.append(case)
-    covered_cases = cases[:]
 
-    current_rule.covered_cases = covered_cases[:]
-    current_rule.no_covered_cases = len(covered_cases)
+    current_rule.covered_cases = cases[:]
+    current_rule.no_covered_cases = len(cases)
+
+    return
+
+
+def set_pruned_rule_covered_cases(pruned_rule, dataset):
+
+    covered_cases = pruned_rule.covered_cases[:]
+
+    for attr in pruned_rule.antecedent:
+        cases = []
+        attr_idx = dataset.col_index[attr]
+
+        for case in covered_cases:
+
+            if dataset.data[case, attr_idx] == pruned_rule.antecedent[attr]:
+                cases.append(case)
+
+        covered_cases = cases[:]
+
+    pruned_rule.covered_cases = covered_cases[:]
+    pruned_rule.no_covered_cases = len(covered_cases)
 
     return
 
@@ -106,3 +126,83 @@ def list_terms_updating(list_of_terms, attribute):
     return new_list
 
 
+def rule_construction(current_rule, list_of_terms, min_case_per_rule, dataset):
+
+    previous_rule = copy.deepcopy(current_rule)
+
+    # Antecedent construction
+    while True:
+
+        if not list_of_terms:
+            break
+
+        set_probability_values(list_of_terms)
+
+        term_2b_added, term_2b_added_index = sort_term(list_of_terms)
+
+        if term_2b_added is None:
+            break
+
+        current_rule.antecedent[term_2b_added.attribute] = term_2b_added.value
+        current_rule.added_terms.append(term_2b_added)
+
+        set_rule_covered_cases(current_rule, dataset)
+
+        if current_rule.no_covered_cases < min_case_per_rule:
+            current_rule = copy.deepcopy(previous_rule)
+            break
+
+        previous_rule = copy.deepcopy(current_rule)
+        list_of_terms = list_terms_updating(list_of_terms, term_2b_added.attribute)
+
+    # Consequent selection
+    current_rule.set_consequent(dataset)
+
+    return
+
+
+def rule_pruning(current_rule, min_case_per_rule, dataset):
+
+    while True:
+
+        list_quality = []
+        list_pruned_rules = []
+        term_drop_idx = 0
+
+        for term_drop in current_rule.antecedent:
+
+            pruned_rule = cRule(dataset)
+            pruned_rule.antecedent = current_rule.antecedent.copy()     # PAY ATTENTION TO DEBUG HERE
+            pruned_rule.added_terms = current_rule.added_terms[:]
+
+            del pruned_rule.antecedent[term_drop]
+            del pruned_rule.added_terms[term_drop_idx]
+
+            set_pruned_rule_covered_cases(pruned_rule, dataset)         # DEBUG THIS NEW FUNCTION
+            pruned_rule.set_consequent(dataset)
+
+            if pruned_rule.no_covered_cases < min_case_per_rule:
+                pruned_rule.quality = 0
+                list_pruned_rules.append(pruned_rule)
+                list_quality.append(pruned_rule.quality)
+                term_drop_idx += 1
+                continue
+
+            pruned_rule.set_quality(dataset)
+            list_pruned_rules.append(pruned_rule)
+            list_quality.append(pruned_rule.quality)
+
+            term_drop_idx += 1
+
+        best_rule_quality = max(list_quality)
+        best_rule_quality_idx = list_quality.index(max(list_quality))
+
+        if best_rule_quality < current_rule.quality:
+            break
+
+        current_rule = copy.deepcopy(list_pruned_rules[best_rule_quality_idx])
+
+        if len(current_rule.antecedent) == 1:
+            break
+
+    return
