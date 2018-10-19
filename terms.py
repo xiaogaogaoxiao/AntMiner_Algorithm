@@ -1,6 +1,7 @@
 import collections
 import math
 
+
 class cTerms:
 
     def __init__(self):
@@ -11,6 +12,7 @@ class cTerms:
         self.entropy = None
         self.logK_entropy = None
         self.probability = None
+        self.term_idx = None
 
     def set_entropy(self, dataset):
 

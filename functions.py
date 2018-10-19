@@ -7,12 +7,15 @@ from rule import cRule
 def get_terms(dict_attr_values):
 
     list_of_terms = []
+    idx = 0
     for a in dict_attr_values:
         for v in dict_attr_values[a]:
             term_obj = cTerms()
             term_obj.attribute = a
             term_obj.value = v
+            term_obj.term_idx = idx
             list_of_terms.append(term_obj)
+            idx += 1
 
     return list_of_terms
 
@@ -22,7 +25,7 @@ def set_pheromone_init(list_of_terms):
     for term in list_of_terms:
         term.pheromone = 1/len(list_of_terms)
 
-    return
+    return list_of_terms
 
 
 def set_heuristic_values(list_of_terms, dataset):
@@ -35,7 +38,7 @@ def set_heuristic_values(list_of_terms, dataset):
     for term in list_of_terms:
         term.set_heuristic(len(dataset.class_values), sum(terms_logK_entropy))
 
-    return
+    return list_of_terms
 
 
 def set_probability_values(list_of_terms):
@@ -89,10 +92,10 @@ def set_rule_covered_cases(current_rule, dataset):
         if dataset.data[case, attr_idx] == current_rule.added_terms[-1].value:
             cases.append(case)
 
-    current_rule.covered_cases = cases[:]
-    current_rule.no_covered_cases = len(cases)
+    # current_rule.covered_cases = cases[:]
+    # current_rule.no_covered_cases = len(cases)
 
-    return
+    return cases[:], len(cases)
 
 
 def set_pruned_rule_covered_cases(pruned_rule, dataset):
@@ -110,10 +113,7 @@ def set_pruned_rule_covered_cases(pruned_rule, dataset):
 
         covered_cases = cases[:]
 
-    pruned_rule.covered_cases = covered_cases[:]
-    pruned_rule.no_covered_cases = len(covered_cases)
-
-    return
+    return covered_cases[:], len(covered_cases)
 
 
 def list_terms_updating(list_of_terms, attribute):
@@ -127,60 +127,66 @@ def list_terms_updating(list_of_terms, attribute):
     return new_list
 
 
-def rule_construction(current_rule, list_of_terms, min_case_per_rule, dataset):
+def rule_construction(list_of_terms, min_case_per_rule, dataset):
 
-    previous_rule = cRule(dataset)
+    constructed_rule = cRule(dataset)
+    current_list_of_terms = copy.deepcopy(list_of_terms)
 
     # Antecedent construction
     while True:
 
-        previous_rule = copy.deepcopy(current_rule)
+        previous_constructed_rule = copy.deepcopy(constructed_rule)
 
-        if not list_of_terms:
+        if not current_list_of_terms:
             break
 
-        set_probability_values(list_of_terms)
+        set_probability_values(current_list_of_terms)
 
-        term_2b_added, term_2b_added_index = sort_term(list_of_terms)
+        term_2b_added, term_2b_added_index = sort_term(current_list_of_terms)
 
         if term_2b_added is None:
             break
 
-        current_rule.antecedent[term_2b_added.attribute] = term_2b_added.value
-        current_rule.added_terms.append(term_2b_added)
+        constructed_rule.antecedent[term_2b_added.attribute] = term_2b_added.value
+        constructed_rule.added_terms.append(term_2b_added)
 
-        set_rule_covered_cases(current_rule, dataset)
+        constructed_rule.covered_cases, constructed_rule.no_covered_cases = \
+            set_rule_covered_cases(constructed_rule, dataset)
 
-        if current_rule.no_covered_cases < min_case_per_rule:
-            current_rule = copy.deepcopy(previous_rule)
+        if constructed_rule.no_covered_cases < min_case_per_rule:
+            constructed_rule = copy.deepcopy(previous_constructed_rule)
             break
 
-        list_of_terms = list_terms_updating(list_of_terms, term_2b_added.attribute)
+        current_list_of_terms = list_terms_updating(current_list_of_terms, term_2b_added.attribute)
 
     # Consequent selection
-    current_rule.set_consequent(dataset)
+    constructed_rule.set_consequent(dataset)
 
-    return
+    return constructed_rule
 
 
-def rule_pruning(current_rule, min_case_per_rule, dataset):
+def rule_pruning(new_rule, min_case_per_rule, dataset):
 
     while True:
+
+        if len(new_rule.antecedent) <= 1:
+            break
 
         list_quality = []
         list_pruned_rules = []
         term_drop_idx = 0
 
-        for term_drop in current_rule.antecedent:
+        for term_drop in new_rule.antecedent:
 
             pruned_rule = cRule(dataset)
-            pruned_rule.antecedent = current_rule.antecedent.copy()     # PAY ATTENTION TO DEBUG HERE
-            pruned_rule.added_terms = current_rule.added_terms[:]
+            pruned_rule.antecedent = new_rule.antecedent.copy()
+            pruned_rule.added_terms = new_rule.added_terms[:]
 
             del pruned_rule.antecedent[term_drop]
             del pruned_rule.added_terms[term_drop_idx]
 
-            set_pruned_rule_covered_cases(pruned_rule, dataset)         # DEBUG THIS NEW FUNCTION
+            pruned_rule.covered_cases, pruned_rule.no_covered_cases = \
+                set_pruned_rule_covered_cases(pruned_rule, dataset)
             pruned_rule.set_consequent(dataset)
 
             if pruned_rule.no_covered_cases < min_case_per_rule:
@@ -199,12 +205,58 @@ def rule_pruning(current_rule, min_case_per_rule, dataset):
         best_rule_quality = max(list_quality)
         best_rule_quality_idx = list_quality.index(max(list_quality))
 
-        if best_rule_quality < current_rule.quality:
+        if best_rule_quality < new_rule.quality:
             break
 
-        current_rule = copy.deepcopy(list_pruned_rules[best_rule_quality_idx])
+        new_rule = copy.deepcopy(list_pruned_rules[best_rule_quality_idx])
 
-        if len(current_rule.antecedent) == 1:
-            break
+    return new_rule
 
-    return
+
+def pheromone_updating(list_of_terms, pruned_rule):
+
+    # Getting used terms
+    used_terms_idx = []
+    for term in pruned_rule.added_terms:
+        used_terms_idx.append(term.term_idx)
+
+    # Increasing used terms pheromone
+    denominator = 0
+    for term in list_of_terms:
+        if term.term_idx in used_terms_idx:
+            term.pheromone += term.pheromone * pruned_rule.quality
+        denominator += term.pheromone
+
+    # Decreasing not used terms: normalization
+    for term in list_of_terms:
+        term.pheromone = term.pheromone / denominator
+
+    return list_of_terms
+
+
+def check_convergence(list_of_rules, converg_test_index):
+
+    idx = 1
+
+    if len(list_of_rules) == 1:
+        return idx
+
+    current_rule = copy.deepcopy(list_of_rules[-1])
+    previous_rule = copy.deepcopy(list_of_rules[-2])
+
+    current_rule_terms = []
+    for term in current_rule.added_terms:
+        current_rule_terms.append(term.term_idx)
+
+    previous_rule_terms = []
+    for term in previous_rule.added_terms:
+        previous_rule_terms.append(term.term_idx)
+
+    if len(current_rule_terms) == len(previous_rule_terms):
+        for current_term_i, previous_term_j in zip(current_rule_terms, previous_rule_terms):
+            if current_term_i != previous_term_j:
+                return idx
+
+        idx = converg_test_index + 1
+
+    return idx
