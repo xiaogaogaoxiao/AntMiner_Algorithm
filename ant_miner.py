@@ -9,18 +9,16 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
     while len(TrainingSet.data) > max_uncovered_cases:
 
         list_of_terms = get_terms(TrainingSet.attr_values)
+
         ant_index = 0
         converg_test_index = 0
 
         list_of_terms = set_pheromone_init(list_of_terms)
-
         list_of_terms = set_heuristic_values(list_of_terms, TrainingSet)
 
+        list_of_current_rules = []
+
         while True:
-
-            ant_index += 1
-
-            list_of_current_rules = []
 
             current_rule = rule_construction(list_of_terms, min_case_per_rule, TrainingSet)
             current_rule.set_quality(TrainingSet)
