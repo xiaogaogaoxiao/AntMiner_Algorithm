@@ -3,8 +3,8 @@ from functions import *
 
 def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_rules_converg):
 
-    TrainingSet = dataset
-    DiscoveredRuleList = []
+    TrainingSet = copy.deepcopy(dataset)
+    discovered_rule_list = []
 
     while len(TrainingSet.data) > max_uncovered_cases:
 
@@ -17,6 +17,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         list_of_terms = set_heuristic_values(list_of_terms, TrainingSet)
 
         list_of_current_rules = []
+        list_of_current_rules_quality = []
 
         while True:
 
@@ -25,11 +26,13 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
 
             current_rule_pruned = rule_pruning(current_rule, min_case_per_rule, TrainingSet)
 
-            list_of_current_rules.append(current_rule_pruned)
+            converg_test_index = check_convergence(current_rule_pruned, list_of_current_rules, converg_test_index)
+
+            if converg_test_index == 1:
+                list_of_current_rules.append(current_rule_pruned)
+                list_of_current_rules_quality.append(current_rule_pruned.quality)
 
             list_of_terms = pheromone_updating(list_of_terms, current_rule_pruned)
-
-            converg_test_index = check_convergence(list_of_current_rules, converg_test_index)
 
             ant_index += 1
 
@@ -38,13 +41,13 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             elif converg_test_index >= no_rules_converg:
                 break
 
+        best_rule_idx = list_of_current_rules_quality.index(max(list_of_current_rules_quality))
+        best_rule = copy.deepcopy(list_of_current_rules[best_rule_idx])
+        discovered_rule_list.append(best_rule)
 
-        # R_best = ChoosesBestRule()
-        # DiscoveredRuleList.append(R_best)
-        # covered_cases = get_CoveredCases
-        # TrainingSet = TrainingSet - covered_cases
+        covered_cases = np.array(best_rule.covered_cases)
+        TrainingSet.data = np.delete(TrainingSet.data, covered_cases, axis=0)
+        TrainingSet.data_updating()
 
-    return DiscoveredRuleList
-
-
+    return discovered_rule_list
 

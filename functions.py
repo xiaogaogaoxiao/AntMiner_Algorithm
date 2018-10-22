@@ -234,15 +234,14 @@ def pheromone_updating(list_of_terms, pruned_rule):
     return list_of_terms
 
 
-def check_convergence(list_of_rules, converg_test_index):
+def check_convergence(current_rule, list_of_rules, converg_test_index):
 
     idx = 1
 
-    if len(list_of_rules) == 1:
+    if len(list_of_rules) == 0:
         return idx
 
-    current_rule = copy.deepcopy(list_of_rules[-1])
-    previous_rule = copy.deepcopy(list_of_rules[-2])
+    previous_rule = copy.deepcopy(list_of_rules[-1])
 
     current_rule_terms = []
     for term in current_rule.added_terms:
