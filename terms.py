@@ -58,6 +58,9 @@ class cTerms:
 
     def set_heuristic(self, k, denominator):
 
+        if float(denominator) == 0.0:
+            denominator = 0.0000001
+
         log_k = math.log2(k)
         fnc_heuristic = (log_k - self.entropy) / denominator
         self.heuristic = fnc_heuristic

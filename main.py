@@ -19,10 +19,12 @@ def main():
     # Object: DATASET
     dataset_SSDP = cDataset(data, class_attr)
 
-    DiscoveredRuleList = ant_miner(dataset_SSDP, NO_OF_ANTS, MIN_CASE_PER_RULE, MAX_UNCOVERED_CASES, NO_RULES_CONVERG)
+    DiscoveredRuleList, TrainingSet = ant_miner(dataset_SSDP, NO_OF_ANTS,
+                                                MIN_CASE_PER_RULE, MAX_UNCOVERED_CASES, NO_RULES_CONVERG)
 
-    print('Test')
-    # imprimir regras
+    for rule in DiscoveredRuleList:
+        rule.print(class_attr)
+
 
 if __name__ == '__main__':
     main()

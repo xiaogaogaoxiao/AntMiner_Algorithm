@@ -159,6 +159,9 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset):
 
         current_list_of_terms = list_terms_updating(current_list_of_terms, term_2b_added.attribute)
 
+    if not constructed_rule.antecedent:
+        return None
+
     # Consequent selection
     constructed_rule.set_consequent(dataset)
 

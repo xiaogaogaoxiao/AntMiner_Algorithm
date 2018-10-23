@@ -22,6 +22,10 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         while True:
 
             current_rule = rule_construction(list_of_terms, min_case_per_rule, TrainingSet)
+
+            if current_rule is None:
+                continue
+
             current_rule.set_quality(TrainingSet)
 
             current_rule_pruned = rule_pruning(current_rule, min_case_per_rule, TrainingSet)
@@ -49,5 +53,5 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         TrainingSet.data = np.delete(TrainingSet.data, covered_cases, axis=0)
         TrainingSet.data_updating()
 
-    return discovered_rule_list
+    return discovered_rule_list, TrainingSet
 
