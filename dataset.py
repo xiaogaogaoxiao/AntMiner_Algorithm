@@ -9,11 +9,14 @@ class cDataset:
         self.class_values = []
         self.attr_values = {}
         self.col_index = {}
-        self.data = np.array(data)
+        self.data = None
+        # self.data = np.array(data.values)
 
         self.set_data(data)
 
     def set_data(self, data):
+
+        data.reset_index()
         col_names = list(data.columns.values)
 
         self.attr_values = dict.fromkeys(col_names)
@@ -27,9 +30,12 @@ class cDataset:
         for idx in range(len(col_names)):
             self.col_index[col_names[idx]] = idx
 
+        self.data = np.array(data.values)
+
         return
 
     def data_updating(self):
+
         attr = list(self.attr_values.keys())
 
         self.attr_values = {}

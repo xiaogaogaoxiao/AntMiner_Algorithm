@@ -44,6 +44,7 @@ def set_heuristic_values(list_of_terms, dataset):
 def set_probability_values(list_of_terms):
 
     denominator = 0
+
     for term in list_of_terms:
         den = term.heuristic * term.pheromone
         denominator = denominator + den
@@ -51,7 +52,7 @@ def set_probability_values(list_of_terms):
     for term in list_of_terms:
         term.set_probability(denominator)
 
-    return
+    return list_of_terms
 
 
 def sort_term(list_of_terms):
@@ -130,6 +131,7 @@ def list_terms_updating(list_of_terms, attribute):
 def rule_construction(list_of_terms, min_case_per_rule, dataset):
 
     constructed_rule = cRule(dataset)
+    flag_empty_rule = 1
     current_list_of_terms = copy.deepcopy(list_of_terms)
 
     # Antecedent construction
@@ -140,7 +142,7 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset):
         if not current_list_of_terms:
             break
 
-        set_probability_values(current_list_of_terms)
+        current_list_of_terms = set_probability_values(current_list_of_terms)
 
         term_2b_added, term_2b_added_index = sort_term(current_list_of_terms)
 
