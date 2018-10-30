@@ -10,7 +10,6 @@ class cDataset:
         self.attr_values = {}
         self.col_index = {}
         self.data = None
-        # self.data = np.array(data.values)
 
         self.set_data(data)
 
@@ -49,3 +48,9 @@ class cDataset:
         self.class_values = list(np.unique(col_class_values))
 
         return
+
+    def get_real_classes(self):
+
+        real_classes = list(self.data[:, self.col_index[self.class_attr]])
+
+        return real_classes

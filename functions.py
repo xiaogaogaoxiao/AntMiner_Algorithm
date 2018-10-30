@@ -1,5 +1,6 @@
-import numpy as np
 import copy
+import collections
+import numpy as np
 from terms import cTerms
 from rule import cRule
 
@@ -264,3 +265,22 @@ def check_convergence(current_rule, list_of_rules, converg_test_index):
         idx = converg_test_index + 1
 
     return idx
+
+
+def get_remaining_cases_rule(dataset):
+
+    classes = dataset.data[:, dataset.col_index[dataset.class_attr]]
+    class_freq = dict(collections.Counter(classes))
+
+    max_freq = 0
+    class_chosen = None
+    for w in class_freq:                        # other way: class_chosen <= max(class_freq[])
+        if class_freq[w] > max_freq:
+            class_chosen = w
+            max_freq = class_freq[w]
+
+    rule = cRule(dataset)
+    rule.covered_cases = []
+    rule.consequent = class_chosen
+
+    return rule

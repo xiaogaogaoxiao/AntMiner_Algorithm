@@ -27,20 +27,25 @@ def main():
 
         # CONSTRUCTING DATASET FOR K ITERATION OF K-FOLD CROSS VALIDATION
         kfold_test_cases = test_folders[fold]
-        kfold_training_cases = test_folders[fold]
+        kfold_training_cases = training_folders[fold]
         training_data = data.drop(kfold_test_cases, axis=0).copy()
         test_data = data.drop(kfold_training_cases, axis=0).copy()
 
-        # Object: DATASET
-        train_dataset = cDataset(data, class_attr)
+        # Objects: TRAINING AND TEST DATASETS
+        training_dataset = cDataset(training_data, class_attr)
+        test_dataset = cDataset(test_data, class_attr)
 
-        discovered_rule_list, final_training_set = ant_miner(train_dataset, no_of_ants,
-                                                    min_cases_per_rule, max_uncovered_cases, no_rules_converg)
+        # ANT-MINER ALGORITHM: list of rules generator
+        discovered_rule_list, final_training_set, no_of_remaining_cases = \
+            ant_miner(training_dataset, no_of_ants, min_cases_per_rule, max_uncovered_cases, no_rules_converg)
+
         print('\nRULES:\n')
         for rule in discovered_rule_list:
             rule.print(class_attr)
 
-        print('end')
+        # CLASSIFICATION OF NEW CASES
+        test_dataset_real_classes = test_dataset.get_real_classes()
+
 
     return
 

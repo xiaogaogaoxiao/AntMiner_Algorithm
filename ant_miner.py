@@ -72,5 +72,9 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         training_dataset.data_updating()
         no_of_remaining_cases = len(training_dataset.data)
 
-    return discovered_rule_list, training_dataset
+    # generating rule for remaining cases
+    rule_for_remaining_cases = get_remaining_cases_rule(training_dataset)
+    discovered_rule_list.append(rule_for_remaining_cases)
+
+    return discovered_rule_list, training_dataset, no_of_remaining_cases
 
