@@ -23,7 +23,7 @@ def main():
 
     for fold in range(k):
 
-        print('FOLD: ', fold)
+        print('\nFOLD: ', fold)
 
         # CONSTRUCTING DATASET FOR K ITERATION OF K-FOLD CROSS VALIDATION
         kfold_test_cases = test_folders[fold]

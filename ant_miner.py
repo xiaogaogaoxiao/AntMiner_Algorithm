@@ -11,11 +11,15 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
 
     while no_of_remaining_cases > max_uncovered_cases:
 
+        last_no_of_remaining_cases = no_of_remaining_cases
+
+        if no_of_remaining_cases == last_no_of_remaining_cases:
+            dataset_stagnation_test += 1
+
         if dataset_stagnation_test == no_rules_converg:
-            print('Dataset length stagnation')
+            # print('Dataset length stagnation')
             break
 
-        last_no_of_remaining_cases = no_of_remaining_cases
         ant_index = 0
         converg_test_index = 1
         list_of_current_rules = []
@@ -28,16 +32,16 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         while True:
 
             if ant_index == no_of_ants:
-                print('Rule iteration: exceeded no_of_ants')
+                # print('Rule iteration: exceeded no_of_ants')
                 break
             elif converg_test_index == no_rules_converg:
-                print('Rule iteration: rule converged')
+                # print('Rule iteration: rule converged')
                 break
 
             current_rule = rule_construction(list_of_terms, min_case_per_rule, training_dataset)
 
             if current_rule is None:
-                print('Empty rule')
+                # print('Empty rule')
                 ant_index += 1
                 converg_test_index += 1
                 continue
@@ -67,9 +71,6 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         training_dataset.data = np.delete(training_dataset.data, covered_cases, axis=0)
         training_dataset.data_updating()
         no_of_remaining_cases = len(training_dataset.data)
-
-        if no_of_remaining_cases == last_no_of_remaining_cases:
-            dataset_stagnation_test += 1
 
     return discovered_rule_list, training_dataset
 
