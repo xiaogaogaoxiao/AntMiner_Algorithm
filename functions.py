@@ -284,3 +284,61 @@ def get_remaining_cases_rule(dataset):
     rule.consequent = class_chosen
 
     return rule
+
+
+def classification_task(dataset, list_of_rules):
+
+    classification_classes = []
+    chosen_class = None
+    all_cases = len(dataset.data)
+    compatibility = 1
+
+    rules = copy.deepcopy(list_of_rules[:-1])
+    remaining_cases_rule = copy.deepcopy(list_of_rules[-1])
+
+    for case in range(all_cases):   # for each new case
+
+        for rule in rules:          # sequential rule compatibility test
+
+            antecedent = rule.antecedent
+            for attr in antecedent:
+                if antecedent[attr] != dataset.data[case, dataset.col_index[attr]]:
+                    compatibility = 0
+
+            if compatibility == 1:
+                chosen_class = rule.consequent
+                break
+
+        if chosen_class is None:
+            chosen_class = remaining_cases_rule.consequent
+
+        classification_classes.append(chosen_class)
+        chosen_class = None
+
+    return classification_classes
+
+
+def get_predictive_accuracy(list_of_real_classes, list_of_classified_classes):
+
+    return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

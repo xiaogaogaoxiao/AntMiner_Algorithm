@@ -21,6 +21,12 @@ def main():
     k = 10
     training_folders, test_folders = k_fold(data, class_attr, k)
 
+    # GLOBAL VARIABLES
+    predictive_accuracy = []
+
+
+    # K ITERATIONS OF ANT-MINER ALGORITHM AND CLASSIFICATION TASK BASED ON GENERATED RULES:
+
     for fold in range(k):
 
         print('\nFOLD: ', fold)
@@ -45,7 +51,11 @@ def main():
 
         # CLASSIFICATION OF NEW CASES
         test_dataset_real_classes = test_dataset.get_real_classes()
+        test_dataset_classification_classes = classification_task(test_dataset, discovered_rule_list)
 
+        # PREDICTIVE ACCURACY CALCULATION
+        accuracy = get_predictive_accuracy(test_dataset_real_classes, test_dataset_classification_classes)
+        predictive_accuracy.append(accuracy)
 
     return
 
