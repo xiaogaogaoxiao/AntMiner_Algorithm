@@ -1,4 +1,6 @@
 import pandas as pd
+from sklearn.metrics import accuracy_score
+
 from dataset import cDataset
 from k_fold_crossvalidation import k_fold
 from ant_miner import *
@@ -13,9 +15,14 @@ def main():
     no_rules_converg = 10
 
     # INPUT: DATASET AND CLASS ATTRIBUTE NAME
-    header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
-    data = pd.read_csv('datasets/tic-tac-toe_data.txt', delimiter=',', header=None, names=header, index_col=False)
-    class_attr = 'Class'
+    # header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
+    # data = pd.read_csv('datasets/tic-tac-toe_data.txt', delimiter=',', header=None, names=header, index_col=False)
+    # class_attr = 'Class'
+
+    header = list(pd.read_csv('datasets/kaggle_header.txt', delimiter=','))
+    data = pd.read_csv('datasets/kaggle_train_data.csv', delimiter=',', header=None, names=header, index_col=False)
+    data = data.drop(columns='id')
+    class_attr = 'target'
 
     # K-FOLD CROSS-VALIDATION SETTINGS
     k = 10
@@ -51,11 +58,20 @@ def main():
 
         # CLASSIFICATION OF NEW CASES
         test_dataset_real_classes = test_dataset.get_real_classes()
-        test_dataset_classification_classes = classification_task(test_dataset, discovered_rule_list)
+        test_dataset_predicted_classes = classification_task(test_dataset, discovered_rule_list)
 
         # PREDICTIVE ACCURACY CALCULATION
-        accuracy = get_predictive_accuracy(test_dataset_real_classes, test_dataset_classification_classes)
+        accuracy = accuracy_score(test_dataset_real_classes, test_dataset_predicted_classes)
         predictive_accuracy.append(accuracy)
+
+    # PREDICTIVE ACCURACY OF K-FOLDZ
+    predictive_accuracy_mean = np.mean(predictive_accuracy)
+    predictive_accuracy_std = np.std(predictive_accuracy)
+
+    print('\nPREDICTIVE ACCURACIES:')
+    print('\n', predictive_accuracy)
+    print('\nPREDICTIVE ACCURACY MEAN', predictive_accuracy_mean)
+    print('\nPREDICTIVE ACCURACY STD', predictive_accuracy_std)
 
     return
 

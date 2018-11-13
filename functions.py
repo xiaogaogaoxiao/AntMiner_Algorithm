@@ -288,7 +288,7 @@ def get_remaining_cases_rule(dataset):
 
 def classification_task(dataset, list_of_rules):
 
-    classification_classes = []
+    predicted_classes = []
     chosen_class = None
     all_cases = len(dataset.data)
     compatibility = 1
@@ -312,15 +312,11 @@ def classification_task(dataset, list_of_rules):
         if chosen_class is None:
             chosen_class = remaining_cases_rule.consequent
 
-        classification_classes.append(chosen_class)
+        predicted_classes.append(chosen_class)
         chosen_class = None
 
-    return classification_classes
+    return predicted_classes
 
-
-def get_predictive_accuracy(list_of_real_classes, list_of_classified_classes):
-
-    return
 
 
 
