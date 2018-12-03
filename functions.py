@@ -132,7 +132,6 @@ def list_terms_updating(list_of_terms, attribute):
 def rule_construction(list_of_terms, min_case_per_rule, dataset):
 
     constructed_rule = cRule(dataset)
-    flag_empty_rule = 1
     current_list_of_terms = copy.deepcopy(list_of_terms)
 
     # Antecedent construction

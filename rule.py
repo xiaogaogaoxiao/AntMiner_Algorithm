@@ -90,3 +90,20 @@ class cRule:
 
         return
 
+    def print_txt(self, file, class_attr):
+
+        antecedent_attrs = list(self.antecedent.keys())
+        qtd_of_terms = len(antecedent_attrs)
+
+        f = open(file, "a+")
+        f.write('\nIF { ')
+        for t in range(0, qtd_of_terms):
+            f.write(repr(antecedent_attrs[t]) + ' = ' + repr(self.antecedent[antecedent_attrs[t]]))
+            if t < qtd_of_terms - 1:
+                f.write(' AND ')
+
+        f.write(' } THAN { ' + repr(class_attr) + ' = ' + repr(self.consequent) + ' }')
+
+        f.close()
+
+        return

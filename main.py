@@ -15,14 +15,10 @@ def main():
     no_rules_converg = 10
 
     # INPUT: DATASET AND CLASS ATTRIBUTE NAME
-    # header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
-    # data = pd.read_csv('datasets/tic-tac-toe_data.txt', delimiter=',', header=None, names=header, index_col=False)
-    # class_attr = 'Class'
-
-    header = list(pd.read_csv('datasets/kaggle_header.txt', delimiter=','))
-    data = pd.read_csv('datasets/kaggle_train_data.csv', delimiter=',', header=None, names=header, index_col=False)
-    data = data.drop(columns='id')
-    class_attr = 'target'
+    file = "tic-tac-toe_results.txt"
+    header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
+    data = pd.read_csv('datasets/tic-tac-toe_data.txt', delimiter=',', header=None, names=header, index_col=False)
+    class_attr = 'Class'
 
     # K-FOLD CROSS-VALIDATION SETTINGS
     k = 10
@@ -30,13 +26,15 @@ def main():
 
     # GLOBAL VARIABLES
     predictive_accuracy = []
-
+    no_of_discovered_rules = []
 
     # K ITERATIONS OF ANT-MINER ALGORITHM AND CLASSIFICATION TASK BASED ON GENERATED RULES:
-
     for fold in range(k):
 
         print('\nFOLD: ', fold)
+        f = open(file, "a+")
+        f.write('\n\nFOLD: ' + repr(fold) + '\n')
+        f.close()
 
         # CONSTRUCTING DATASET FOR K ITERATION OF K-FOLD CROSS VALIDATION
         kfold_test_cases = test_folders[fold]
@@ -55,6 +53,8 @@ def main():
         print('\nRULES:\n')
         for rule in discovered_rule_list:
             rule.print(class_attr)
+            rule.print_txt(file, class_attr)
+        no_of_discovered_rules.append(len(discovered_rule_list))
 
         # CLASSIFICATION OF NEW CASES
         test_dataset_real_classes = test_dataset.get_real_classes()
@@ -63,15 +63,27 @@ def main():
         # PREDICTIVE ACCURACY CALCULATION
         accuracy = accuracy_score(test_dataset_real_classes, test_dataset_predicted_classes)
         predictive_accuracy.append(accuracy)
+        f = open(file, "a+")
+        f.write('\n\n>> Number of discovered rules: ' + repr(len(discovered_rule_list)))
+        f.write('\n>> Predictive Accuracy: ' + repr(accuracy))
+        f.close()
 
-    # PREDICTIVE ACCURACY OF K-FOLDZ
+    # PREDICTIVE ACCURACY OF K-FOLDS
     predictive_accuracy_mean = np.mean(predictive_accuracy)
     predictive_accuracy_std = np.std(predictive_accuracy)
+    no_of_discovered_rules_average = np.mean(no_of_discovered_rules)
 
     print('\nPREDICTIVE ACCURACIES:')
     print('\n', predictive_accuracy)
     print('\nPREDICTIVE ACCURACY MEAN', predictive_accuracy_mean)
     print('\nPREDICTIVE ACCURACY STD', predictive_accuracy_std)
+    f = open(file, "a+")
+    f.write('\n\n>>> K-FOLD INFOS <<<')
+    f.write('\n- PREDICTIVE ACCURACIES: ' + repr(predictive_accuracy))
+    f.write('\n- K-FOLD ACCURACY (mean +- std): ' + repr(predictive_accuracy_mean) +
+            ' +- ' + repr(predictive_accuracy_std))
+    f.write('\n- AVERAGE OF NUMBER OF DISCOVERED RULES: ' + repr(no_of_discovered_rules_average))
+    f.close()
 
     return
 

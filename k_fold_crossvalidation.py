@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 
 def k_fold(data, class_attr, k):
 
-    fold = StratifiedKFold(k)
+    fold = StratifiedKFold(k, shuffle=True)
 
     training_folders = dict.fromkeys(range(k))
     test_folders = dict.fromkeys(range(k))
