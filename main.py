@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score
 from dataset import cDataset
 from k_fold_crossvalidation import k_fold
 from ant_miner import *
+from data_preprocessing import data_analysis
 
 
 def main():
@@ -15,10 +16,12 @@ def main():
     no_rules_converg = 10
 
     # INPUT: DATASET AND CLASS ATTRIBUTE NAME
-    file = "tic-tac-toe_results.txt"
-    header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
-    data = pd.read_csv('datasets/tic-tac-toe_data.txt', delimiter=',', header=None, names=header, index_col=False)
+    file = "breast-cancer-wisconsin_results.txt"
+    header = list(pd.read_csv('datasets/breast-cancer-wisconsin_header.txt', delimiter=','))
+    data = pd.read_csv('datasets/breast-cancer-wisconsin.data.txt', delimiter=',', header=None, names=header, index_col=False)
     class_attr = 'Class'
+
+    data = data_analysis(data)
 
     # K-FOLD CROSS-VALIDATION SETTINGS
     k = 10
@@ -82,7 +85,7 @@ def main():
     f.write('\n- PREDICTIVE ACCURACIES: ' + repr(predictive_accuracy))
     f.write('\n- K-FOLD ACCURACY (mean +- std): ' + repr(predictive_accuracy_mean) +
             ' +- ' + repr(predictive_accuracy_std))
-    f.write('\n- AVERAGE OF NUMBER OF DISCOVERED RULES: ' + repr(no_of_discovered_rules_average))
+    f.write('\n- AVERAGE NUMBER OF DISCOVERED RULES: ' + repr(no_of_discovered_rules_average))
     f.close()
 
     return

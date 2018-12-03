@@ -27,7 +27,7 @@ class cDataset:
 
         self.col_index = dict.fromkeys(col_names)
         for idx in range(len(col_names)):
-            self.col_index[col_names[idx]] = idx
+            self.col_index[col_names[idx]] = data.columns.get_loc(col_names[idx])
 
         self.data = np.array(data.values)
 

@@ -81,12 +81,12 @@ class cRule:
         qtd_of_terms = len(antecedent_attrs)
 
         for t in range(0, qtd_of_terms):
-            print(antecedent_attrs[t] + " = " + self.antecedent[antecedent_attrs[t]], end="")
+            print(antecedent_attrs[t] + " = " + str(self.antecedent[antecedent_attrs[t]]), end="")
 
             if t < qtd_of_terms - 1:
                 print(" AND ", end="")
 
-        print(" } THAN { " + class_attr + " = " + self.consequent + " }")
+        print(" } THAN { " + class_attr + " = " + str(self.consequent) + " }")
 
         return
 
