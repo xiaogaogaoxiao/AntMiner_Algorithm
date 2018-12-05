@@ -16,9 +16,9 @@ def main():
     no_rules_converg = 10
 
     # INPUT: DATASET AND CLASS ATTRIBUTE NAME
-    file = "breast-cancer-wisconsin_results.txt"
-    header = list(pd.read_csv('datasets/breast-cancer-wisconsin_header.txt', delimiter=','))
-    data = pd.read_csv('datasets/breast-cancer-wisconsin.data.txt', delimiter=',', header=None, names=header, index_col=False)
+    file = "dermatology_results.txt"
+    header = list(pd.read_csv('datasets/dermatology_header.txt', delimiter=','))
+    data = pd.read_csv('datasets/dermatology.data.txt', delimiter=',', header=None, names=header, index_col=False)
     class_attr = 'Class'
 
     data = data_analysis(data)
