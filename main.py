@@ -16,12 +16,12 @@ def main():
     no_rules_converg = 10
 
     # INPUT: DATASET AND CLASS ATTRIBUTE NAME
-    file = "dermatology_results.txt"
-    header = list(pd.read_csv('datasets/dermatology_header.txt', delimiter=','))
-    data = pd.read_csv('datasets/dermatology.data.txt', delimiter=',', header=None, names=header, index_col=False)
+    file = "tic-tac-toe_log-results.txt"
+    header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
+    data = pd.read_csv('datasets/tic-tac-toe_data.txt', delimiter=',', header=None, names=header, index_col=False)
     class_attr = 'Class'
 
-    data = data_analysis(data)
+    #data = data_analysis(data)
 
     # K-FOLD CROSS-VALIDATION SETTINGS
     k = 10
@@ -36,7 +36,9 @@ def main():
 
         print('\nFOLD: ', fold)
         f = open(file, "a+")
-        f.write('\n\nFOLD: ' + repr(fold) + '\n')
+        f.write('\n\n*********************************************************************************************************************')
+        f.write('\n*********************************************************************************************************************')
+        f.write('\n********** FOLD: ' + repr(fold) + ' **********')
         f.close()
 
         # CONSTRUCTING DATASET FOR K ITERATION OF K-FOLD CROSS VALIDATION
@@ -50,10 +52,18 @@ def main():
         test_dataset = cDataset(test_data, class_attr)
 
         # ANT-MINER ALGORITHM: list of rules generator
+        f = open(file, "a+")
+        f.write('\n\n******* ANT-MINER ALGORITHM *******')
+        f.close()
         discovered_rule_list, final_training_set, no_of_remaining_cases = \
             ant_miner(training_dataset, no_of_ants, min_cases_per_rule, max_uncovered_cases, no_rules_converg)
 
         print('\nRULES:\n')
+        f = open(file, "a+")
+        f.write('\n\n******* DISCOVERED MODEL (Ant-Miner Algorithm Results) *******')
+        f.write('\n>> Number of remaining uncovered cases: ' + repr(no_of_remaining_cases))
+        f.write('\n>> Discovered rule list:')
+        f.close()
         for rule in discovered_rule_list:
             rule.print(class_attr)
             rule.print_txt(file, class_attr)
@@ -67,7 +77,8 @@ def main():
         accuracy = accuracy_score(test_dataset_real_classes, test_dataset_predicted_classes)
         predictive_accuracy.append(accuracy)
         f = open(file, "a+")
-        f.write('\n\n>> Number of discovered rules: ' + repr(len(discovered_rule_list)))
+        f.write('\n\n******* DISCOVERED MODEL INFO *******')
+        f.write('\n>> Number of discovered rules: ' + repr(len(discovered_rule_list)))
         f.write('\n>> Predictive Accuracy: ' + repr(accuracy))
         f.close()
 
@@ -81,7 +92,8 @@ def main():
     print('\nPREDICTIVE ACCURACY MEAN', predictive_accuracy_mean)
     print('\nPREDICTIVE ACCURACY STD', predictive_accuracy_std)
     f = open(file, "a+")
-    f.write('\n\n>>> K-FOLD INFOS <<<')
+    f.write('\n\n************************************************\n************************************************')
+    f.write('\n******* K-FOLD CROSS VALIDATION INFO *******')
     f.write('\n- PREDICTIVE ACCURACIES: ' + repr(predictive_accuracy))
     f.write('\n- K-FOLD ACCURACY (mean +- std): ' + repr(predictive_accuracy_mean) +
             ' +- ' + repr(predictive_accuracy_std))

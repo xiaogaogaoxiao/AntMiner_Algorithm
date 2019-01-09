@@ -135,11 +135,19 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset):
     current_list_of_terms = copy.deepcopy(list_of_terms)
 
     # Antecedent construction
+    idx = 0
     while True:
+        idx += 1
+        f = open("tic-tac-toe_log-results.txt", "a+")
+        f.write('\n\n-> Rule Contruction While: Iteration ' + repr(idx))
+        f.close()
 
         previous_constructed_rule = copy.deepcopy(constructed_rule)
 
         if not current_list_of_terms:
+            f = open("tic-tac-toe_log-results.txt", "a+")
+            f.write('\n\n-> END Construction While: empty current_list_of_terms')
+            f.close()
             break
 
         current_list_of_terms = set_probability_values(current_list_of_terms)
@@ -147,6 +155,9 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset):
         term_2b_added, term_2b_added_index = sort_term(current_list_of_terms)
 
         if term_2b_added is None:
+            f = open("tic-tac-toe_log-results.txt", "a+")
+            f.write('\n\n-> END Construction While: empty term_2b_added')
+            f.close()
             break
 
         constructed_rule.antecedent[term_2b_added.attribute] = term_2b_added.value
@@ -155,18 +166,51 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset):
         constructed_rule.covered_cases, constructed_rule.no_covered_cases = \
             set_rule_covered_cases(constructed_rule, dataset)
 
+        f = open("tic-tac-toe_log-results.txt", "a+")
+        f.write('\n- Constructed Rule:')
+        f.close()
+        constructed_rule.print_txt("tic-tac-toe_log-results.txt", 'Class')
+        f = open("tic-tac-toe_log-results.txt", "a+")
+        f.write('\n- Previous Rule:')
+        f.close()
+        previous_constructed_rule.print_txt("tic-tac-toe_log-results.txt", 'Class')
+
         if constructed_rule.no_covered_cases < min_case_per_rule:
+            f = open("tic-tac-toe_log-results.txt", "a+")
+            f.write('\n\n-> END Construction While: min_case_per_rule condition')
+            f.write('\n  -- Last constructed rule:')
+            f.close()
+            constructed_rule.print_txt("tic-tac-toe_log-results.txt", 'Class')
+            f = open("tic-tac-toe_log-results.txt", "a+")
+            f.write('\n no_covered_cases: ' + repr(constructed_rule.no_covered_cases))
+            f.close()
+
             constructed_rule = copy.deepcopy(previous_constructed_rule)
+
+            f = open("tic-tac-toe_log-results.txt", "a+")
+            f.write('\n  -- Previous constructed rule:')
+            f.close()
+            constructed_rule.print_txt("tic-tac-toe_log-results.txt", 'Class')
+            f = open("tic-tac-toe_log-results.txt", "a+")
+            f.write('\n no_covered_cases: ' + repr(constructed_rule.no_covered_cases))
+            f.close()
             break
 
         current_list_of_terms = list_terms_updating(current_list_of_terms, term_2b_added.attribute)
 
     if not constructed_rule.antecedent:
+        f = open("tic-tac-toe_log-results.txt", "a+")
+        f.write('\n---> END: Rule Construction <--- !! no rule antecedent constructed')
+        f.write('\n  - Total of while iterations: ' + repr(idx))
+        f.close()
         return None
 
     # Consequent selection
     constructed_rule.set_consequent(dataset)
-
+    f = open("tic-tac-toe_log-results.txt", "a+")
+    f.write('\n\n---> END: Rule Construction <---')
+    f.write('\n  - Total of while iterations: ' + repr(idx))
+    f.close()
     return constructed_rule
 
 
