@@ -11,10 +11,10 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
     no_of_remaining_cases = len(training_dataset.data)
 
     f = open(log_file, "a+")
-    f.write('\n\n\n==================== EXTERNAL LOOP ====================')
+    f.write('\n\n\n==================== EXTERNAL LOOP ==========================================================================')
     f.write('\n> Stopping condition: number of uncovered cases')
     f.write('\n> Initialise pheromones > create t rule > choose best rule > add to the list > remove rule covered cases')
-    f.write('\n======================================================')
+    f.write('\n============================================================================================================')
     f.write('\n FOLD OF CROSS VALIDATION: ' + repr(fold))
     f.close()
     idx_e = 0
@@ -35,7 +35,6 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f.write('\n!! Alternative Condition: dataset stagnation')
             f.write('\n   - no_of_remaining_cases = ' + repr(no_of_remaining_cases))
             f.write('\n   - dataset_stagnation_test = ' + repr(dataset_stagnation_test))
-            f.write('\n======================================================')
             f.close()
             break
 
@@ -68,7 +67,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
 
             if ant_index == no_of_ants:
                 f = open(i_log_file, "a+")
-                f.write('\n\n>>>>> END Internal Loop')
+                f.write('\n\n==================== END Internal Loop')
                 f.write('\n> Condition: exceeded no_of_ants')
                 f.write('\n  - ant_index = ' + repr(ant_index))
                 f.write('\n  - converg_test_index = ' + repr(converg_test_index))
@@ -77,7 +76,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
                 break
             elif converg_test_index == no_rules_converg:
                 f = open(i_log_file, "a+")
-                f.write('\n\n>>>>> END Internal Loop')
+                f.write('\n\n==================== END Internal Loop')
                 f.write('\n> Condition: rule converged')
                 f.write('\n  - ant_index = ' + repr(ant_index))
                 f.write('\n  - converg_test_index = ' + repr(converg_test_index))
@@ -179,7 +178,6 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
     f.write('\n> Stopping Condition: number of remaining cases')
     f.write('\n   - no_of_remaining_cases = ' + repr(no_of_remaining_cases))
     f.write('\n   - max_uncovered_cases = ' + repr(max_uncovered_cases))
-    f.write('\n======================================================')
     f.close()
 
     # generating rule for remaining cases

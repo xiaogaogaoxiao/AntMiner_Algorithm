@@ -290,7 +290,7 @@ def rule_pruning(new_rule, min_case_per_rule, dataset, idx_e, idx_i):
 
         if len(new_rule.antecedent) <= 1:
             f = open(p_log_file, "a+")
-            f.write('\n\n>>>>> END Pruning Function Loop')
+            f.write('\n\n================== END PRUNING FUNCTION LOOP')
             f.write('\n> Condition: pruned rule antecedent = 1')
             f.write('\n  - Number of iterations: ' + repr(idx))
             f.close()
