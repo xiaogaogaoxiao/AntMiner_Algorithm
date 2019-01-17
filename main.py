@@ -16,9 +16,9 @@ def main():
     no_rules_converg = 10
 
     # INPUT: DATASET AND CLASS ATTRIBUTE NAME
-    file = "tic-tac-toe_log-results.txt"
+    log_file = "main_log-results.txt"
     header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
-    data = pd.read_csv('datasets/tic-tac-toe_data.txt', delimiter=',', header=None, names=header, index_col=False)
+    data = pd.read_csv('datasets/new_tic-tac-toe_data_equalized.txt', delimiter=',', header=None, names=header, index_col=False)
     class_attr = 'Class'
 
     #data = data_analysis(data)
@@ -35,10 +35,10 @@ def main():
     for fold in range(k):
 
         print('\nFOLD: ', fold)
-        f = open(file, "a+")
-        f.write('\n\n*********************************************************************************************************************')
-        f.write('\n*********************************************************************************************************************')
-        f.write('\n********** FOLD: ' + repr(fold) + ' **********')
+        f = open(log_file, "a+")
+        f.write('\n\n\n****************************************************************************************************')
+        f.write('\n**************************************** FOLD: ' + repr(fold) + ' ***************************************************')
+        f.write('\n****************************************************************************************************')
         f.close()
 
         # CONSTRUCTING DATASET FOR K ITERATION OF K-FOLD CROSS VALIDATION
@@ -52,21 +52,21 @@ def main():
         test_dataset = cDataset(test_data, class_attr)
 
         # ANT-MINER ALGORITHM: list of rules generator
-        f = open(file, "a+")
-        f.write('\n\n******* ANT-MINER ALGORITHM *******')
+        f = open(log_file, "a+")
+        f.write('\n\n>>>>>>>>>>>>>>>>>>>> ANT-MINER ALGORITHM\n')
         f.close()
         discovered_rule_list, final_training_set, no_of_remaining_cases = \
-            ant_miner(training_dataset, no_of_ants, min_cases_per_rule, max_uncovered_cases, no_rules_converg)
+            ant_miner(training_dataset, no_of_ants, min_cases_per_rule, max_uncovered_cases, no_rules_converg, fold)
 
         print('\nRULES:\n')
-        f = open(file, "a+")
-        f.write('\n\n******* DISCOVERED MODEL (Ant-Miner Algorithm Results) *******')
-        f.write('\n>> Number of remaining uncovered cases: ' + repr(no_of_remaining_cases))
+        f = open(log_file, "a+")
+        f.write('\n\n>>>>>>>>>>>>>>>>>>>> DISCOVERED MODEL (Ant-Miner Algorithm Results)')
+        f.write('\n\n>> Number of remaining uncovered cases: ' + repr(no_of_remaining_cases))
         f.write('\n>> Discovered rule list:')
         f.close()
         for rule in discovered_rule_list:
             rule.print(class_attr)
-            rule.print_txt(file, class_attr)
+            rule.print_txt(log_file, class_attr)
         no_of_discovered_rules.append(len(discovered_rule_list))
 
         # CLASSIFICATION OF NEW CASES
@@ -76,9 +76,8 @@ def main():
         # PREDICTIVE ACCURACY CALCULATION
         accuracy = accuracy_score(test_dataset_real_classes, test_dataset_predicted_classes)
         predictive_accuracy.append(accuracy)
-        f = open(file, "a+")
-        f.write('\n\n******* DISCOVERED MODEL INFO *******')
-        f.write('\n>> Number of discovered rules: ' + repr(len(discovered_rule_list)))
+        f = open(log_file, "a+")
+        f.write('\n\n>> Number of discovered rules: ' + repr(len(discovered_rule_list)))
         f.write('\n>> Predictive Accuracy: ' + repr(accuracy))
         f.close()
 
@@ -91,13 +90,14 @@ def main():
     print('\n', predictive_accuracy)
     print('\nPREDICTIVE ACCURACY MEAN', predictive_accuracy_mean)
     print('\nPREDICTIVE ACCURACY STD', predictive_accuracy_std)
-    f = open(file, "a+")
-    f.write('\n\n************************************************\n************************************************')
-    f.write('\n******* K-FOLD CROSS VALIDATION INFO *******')
-    f.write('\n- PREDICTIVE ACCURACIES: ' + repr(predictive_accuracy))
-    f.write('\n- K-FOLD ACCURACY (mean +- std): ' + repr(predictive_accuracy_mean) +
+    f = open(log_file, "a+")
+    f.write('\n\n\n****************************************************************************************************')
+    f.write('\n****************************** 10-FOLD CROSS VALIDATION INFO ******************************')
+    f.write('\n****************************************************************************************************')
+    f.write('\n> PREDICTIVE ACCURACIES: ' + repr(predictive_accuracy))
+    f.write('\n> K-FOLD ACCURACY (mean +- std): ' + repr(predictive_accuracy_mean) +
             ' +- ' + repr(predictive_accuracy_std))
-    f.write('\n- AVERAGE NUMBER OF DISCOVERED RULES: ' + repr(no_of_discovered_rules_average))
+    f.write('\n> AVERAGE NUMBER OF DISCOVERED RULES: ' + repr(no_of_discovered_rules_average))
     f.close()
 
     return
