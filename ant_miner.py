@@ -25,11 +25,21 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx_e))
         f.close()
 
-        last_no_of_remaining_cases = no_of_remaining_cases
+        previous_rule = Rule(training_dataset)
+        ant_index = 0
+        converg_test_index = 1
 
+        list_of_current_rules = []
+        list_of_current_rules_quality = []
+
+        list_of_terms = get_terms(training_dataset.attr_values)
+        list_of_terms = set_pheromone_init(list_of_terms)
+        list_of_terms = set_heuristic_values(list_of_terms, training_dataset)
+
+        # DATASET STAGNATION >> REVIEW NECESSITY
+        last_no_of_remaining_cases = no_of_remaining_cases
         if no_of_remaining_cases == last_no_of_remaining_cases:
             dataset_stagnation_test += 1
-
         if dataset_stagnation_test == no_rules_converg:
             f = open(log_file, "a+")
             f.write('\n\n==================== END EXTERNAL LOOP')
@@ -38,15 +48,6 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f.write('\n   - dataset_stagnation_test = ' + repr(dataset_stagnation_test))
             f.close()
             break
-
-        ant_index = 0
-        converg_test_index = 1
-        list_of_current_rules = []
-        list_of_current_rules_quality = []
-
-        list_of_terms = get_terms(training_dataset.attr_values)
-        list_of_terms = set_pheromone_init(list_of_terms)
-        list_of_terms = set_heuristic_values(list_of_terms, training_dataset)
 
         f = open(log_file, "a+")
         f.write('\n> Number of terms: ' + repr(len(list_of_terms)))
@@ -68,31 +69,24 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx_i))
             f.close()
 
-            if ant_index == no_of_ants:
+            if ant_index >= no_of_ants or converg_test_index >= no_rules_converg:
                 f = open(i_log_file, "a+")
                 f.write('\n\n==================== END Internal Loop')
-                f.write('\n> Condition: exceeded no_of_ants')
+                f.write('\n  - no_of_ants = ' + repr(no_of_ants))
                 f.write('\n  - ant_index = ' + repr(ant_index))
-                f.write('\n  - converg_test_index = ' + repr(converg_test_index))
-                f.write('\n  - Number of iterations: ' + repr(idx_i))
-                f.close()
-                break
-            elif converg_test_index == no_rules_converg:
-                f = open(i_log_file, "a+")
-                f.write('\n\n==================== END Internal Loop')
-                f.write('\n> Condition: rule converged')
-                f.write('\n  - ant_index = ' + repr(ant_index))
+                f.write('\n  - no_rules_converg = ' + repr(no_rules_converg))
                 f.write('\n  - converg_test_index = ' + repr(converg_test_index))
                 f.write('\n  - Number of iterations: ' + repr(idx_i))
                 f.close()
                 break
 
+            # RULE CONSTRUCTION
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Construction Function: rule-construction-fnc_log-results.txt file <=')
             f.close()
-
             current_rule = rule_construction(list_of_terms, min_case_per_rule, training_dataset, idx_e, idx_i)
 
+            # Case Rule-Constructed is NONE >> check necessity !!!
             if current_rule is None:
                 f = open(i_log_file, "a+")
                 f.write('\n!!! Empty Rule Constructed !!!')
@@ -102,12 +96,12 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
                 converg_test_index += 1
                 continue
 
-            current_rule.set_quality(training_dataset, idx_e, idx_i, p=False)
+            # current_rule.set_quality(training_dataset, idx_e, idx_i, p=False)  # !! put it inside rule_construction
 
+            # RULE PRUNING
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Pruning Function: rule-pruning-fnc_log-results.txt file <=')
             f.close()
-
             current_rule_pruned = rule_pruning(current_rule, min_case_per_rule, training_dataset, idx_e, idx_i)
 
             f = open(i_log_file, "a+")
@@ -134,20 +128,32 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
                 f.write('\n-Quality: ' + repr(last_list_rule.quality))
                 f.close()
 
-            converg_test_index = check_convergence(current_rule_pruned, list_of_current_rules, converg_test_index)
-
-            if converg_test_index == 1:
+            # converg_test_index = check_convergence(current_rule_pruned, list_of_current_rules, converg_test_index)
+            if current_rule_pruned.equals(previous_rule):
+                converg_test_index += 1
+            else:
                 list_of_current_rules.append(current_rule_pruned)
                 list_of_current_rules_quality.append(current_rule_pruned.quality)
+                converg_test_index = 1
+                previous_rule = copy.deepcopy(current_rule_pruned)
                 f = open(i_log_file, "a+")
                 f.write('\n\n!!! Pruned Constructed Rule did not converged')
                 f.write('\n!!! Pruned Rule added to current_rule_list')
                 f.close()
 
+            # if converg_test_index == 1:
+            #     list_of_current_rules.append(current_rule_pruned)
+            #     list_of_current_rules_quality.append(current_rule_pruned.quality)
+            #     f = open(i_log_file, "a+")
+            #     f.write('\n\n!!! Pruned Constructed Rule did not converged')
+            #     f.write('\n!!! Pruned Rule added to current_rule_list')
+            #     f.close()
+
             list_of_terms = pheromone_updating(list_of_terms, current_rule_pruned)
-
             ant_index += 1
+        # END OF COLONY LOOP
 
+        # !!! CHECK NECESSITY
         if not list_of_current_rules_quality:
             f = open(i_log_file, "a+")
             f.write('\n\n!!! WARNING: Internal Loop added no rule quality to list_of_current_rules_quality > continue')
@@ -163,6 +169,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         training_dataset.data_updating()
         no_of_remaining_cases = len(training_dataset.data)
 
+        # just for log register
         f = open(log_file, "a+")
         f.write('\n>> Internal Loop Results:')
         f.write('\n>Number of generated rules on internal loop: ' + repr(len(list_of_current_rules)))
@@ -178,7 +185,9 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         f.write('\n>Last_no_of_remaining_cases: ' + repr(last_no_of_remaining_cases))
         f.write('\n>No_of_remaining_cases: ' + repr(no_of_remaining_cases))
         f.close()
+    # END OF WHILE (AVAILABLE_CASES > MAX_UNCOVERED_CASES)
 
+    # just for log register
     f = open(log_file, "a+")
     f.write('\n\n==================== END EXTERNAL LOOP: end of Ant-Miner Algorithm')
     f.write('\n> Stopping Condition: number of remaining cases')

@@ -214,12 +214,15 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset, idx_e, idx_i):
 
     # Consequent selection
     new_rule.set_consequent(dataset)
+    new_rule.set_quality(dataset, idx_e, idx_i, p=False)
+
     f = open(c_log_file, "a+")
     f.write('\n\n>>> FINAL RULE ')
     f.close()
     new_rule.print_txt(c_log_file, 'Class')
     f = open(c_log_file, "a+")
     f.write('\n-no_covered_cases: ' + repr(new_rule.no_covered_cases))
+    f.write('\n-quality: ' + repr(new_rule.quality))
     f.write('\n\n> Number of iterations: ' + repr(idx))
     f.close()
 
@@ -346,33 +349,6 @@ def pheromone_updating(list_of_terms, pruned_rule):
         term.pheromone = term.pheromone / denominator
 
     return list_of_terms
-
-
-def check_convergence(current_rule, list_of_rules, converg_test_index):
-
-    idx = 1
-
-    if len(list_of_rules) == 0:
-        return idx
-
-    previous_rule = copy.deepcopy(list_of_rules[-1])
-
-    current_rule_terms = []
-    for term in current_rule.added_terms:
-        current_rule_terms.append(term.term_idx)
-
-    previous_rule_terms = []
-    for term in previous_rule.added_terms:
-        previous_rule_terms.append(term.term_idx)
-
-    if len(current_rule_terms) == len(previous_rule_terms):
-        for current_term_i, previous_term_j in zip(current_rule_terms, previous_rule_terms):
-            if current_term_i != previous_term_j:
-                return idx
-
-        idx = converg_test_index + 1
-
-    return idx
 
 
 def get_remaining_cases_rule(dataset):

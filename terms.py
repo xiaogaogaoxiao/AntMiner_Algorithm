@@ -20,7 +20,6 @@ class Terms:
         class_idx = dataset.col_index[dataset.class_attr]
         attr_idx = dataset.col_index[self.attribute]
         data = dataset.data
-        # rows = data.index[data[self.attribute] == self.value].tolist()
         rows = list(np.where(data[:, attr_idx] == self.value)[0])
         value_freq = len(rows)
 

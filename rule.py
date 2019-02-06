@@ -10,7 +10,7 @@ class Rule:
         self.added_terms = []
         self.covered_cases = []
         self.no_covered_cases = None
-        self.quality = None
+        self.quality = 0
 
         self.set_covered_cases_init(dataset)
 
@@ -141,6 +141,23 @@ class Rule:
             np.savetxt(array_log_file, dataset.data, fmt='%5s')
 
         return
+
+    def equals(self, prev_rule):
+
+        attr_this = self.antecedent.keys()
+        attr_prev = prev_rule.antecedent.keys()
+
+        if self.consequent == prev_rule.consequent:
+            if len(set(attr_this) ^ set(attr_prev)) == 0:   # both have same keys
+                for attr in attr_this:
+                    if self.antecedent[attr] != prev_rule.antecedent[attr]:
+                        return False
+            else:
+                return False
+        else:
+            return False
+
+        return True
 
     def print(self, class_attr):
 
