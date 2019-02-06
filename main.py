@@ -16,7 +16,7 @@ def main():
     no_rules_converg = 10
 
     # INPUT: DATASET AND CLASS ATTRIBUTE NAME
-    log_file = "main_log-results.txt"
+    log_file = "log_main.txt"
     header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
     data = pd.read_csv('datasets/new_tic-tac-toe_data_equalized.txt', delimiter=',', header=None, names=header, index_col=False)
     class_attr = 'Class'
@@ -46,6 +46,10 @@ def main():
         kfold_training_cases = training_folders[fold]
         training_data = data.drop(kfold_test_cases, axis=0).copy()
         test_data = data.drop(kfold_training_cases, axis=0).copy()
+        f = open(log_file, "a+")
+        f.write('\n> TRAINING CASES: ' + repr(kfold_training_cases))
+        f.write('\n> TEST CASES: ' + repr(kfold_test_cases))
+        f.close()
 
         # Objects: TRAINING AND TEST DATASETS
         training_dataset = cDataset(training_data, class_attr)

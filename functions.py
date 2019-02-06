@@ -104,36 +104,42 @@ def sort_term(list_of_terms, c_log_file):
 
 def set_rule_covered_cases(current_rule, dataset):
 
-    last_added_term_attr = current_rule.added_terms[-1].attribute
+    previous_covered_cases = current_rule.covered_cases[:]
 
-    cases = []
-    attr_idx = dataset.col_index[last_added_term_attr]
-    for case in current_rule.covered_cases:
-        if dataset.data[case, attr_idx] == current_rule.added_terms[-1].value:
-            cases.append(case)
+    last_term = current_rule.added_terms[-1]
+    last_term_attr_idx = dataset.col_index[last_term.attribute]
+    last_term_value = last_term.value
+    last_term_cases = list(np.where(dataset.data[:, last_term_attr_idx] == last_term_value)[0])
+
+    new_covered_cases = list(set(previous_covered_cases).intersection(last_term_cases))
+
+    # cases = []
+    # attr_idx = dataset.col_index[last_added_term_attr]
+    # for case in current_rule.covered_cases:
+    #     if dataset.data[case, attr_idx] == last_added_term_attr.value:
+    #         cases.append(case)
 
     # current_rule.covered_cases = cases[:]
     # current_rule.no_covered_cases = len(cases)
 
-    return cases[:], len(cases)
+    return new_covered_cases[:], len(new_covered_cases)
 
 
 def set_pruned_rule_covered_cases(pruned_rule, dataset):
 
-    covered_cases = pruned_rule.covered_cases[:]
-
+    attr_cases = []
     for attr in pruned_rule.antecedent:
-        cases = []
         attr_idx = dataset.col_index[attr]
+        attr_cases.append(list(np.where(dataset.data[:, attr_idx] == pruned_rule.antecedent[attr])[0]))
 
-        for case in covered_cases:
+    new_covered_cases = list(set(pruned_rule.covered_cases).intersection(*attr_cases))
 
-            if dataset.data[case, attr_idx] == pruned_rule.antecedent[attr]:
-                cases.append(case)
+        # for case in covered_cases:
+        #     if dataset.data[case, attr_idx] == pruned_rule.antecedent[attr]:
+        #         cases.append(case)
+        # covered_cases = cases[:]
 
-        covered_cases = cases[:]
-
-    return covered_cases[:], len(covered_cases)
+    return new_covered_cases[:], len(new_covered_cases)
 
 
 def list_terms_updating(list_of_terms, attribute):
@@ -148,7 +154,7 @@ def list_terms_updating(list_of_terms, attribute):
 
 
 def rule_construction(list_of_terms, min_case_per_rule, dataset, idx_e, idx_i):
-    c_log_file = "rule-construction-fnc_log-results.txt"
+    c_log_file = "log_rule-construction-fnc.txt"
 
     constructed_rule = cRule(dataset)
     current_list_of_terms = copy.deepcopy(list_of_terms)
@@ -262,7 +268,7 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset, idx_e, idx_i):
 
 
 def rule_pruning(new_rule, min_case_per_rule, dataset, idx_e, idx_i):
-    p_log_file = "rule-pruning-fnc_log-results.txt"
+    p_log_file = "log_rule-pruning-fnc.txt"
 
     f = open(p_log_file, "a+")
     f.write('\n\n\n================== RULE PRUNING LOOP =========================================================================')
@@ -340,7 +346,7 @@ def rule_pruning(new_rule, min_case_per_rule, dataset, idx_e, idx_i):
                 f.close()
                 continue
 
-            pruned_rule.set_quality(dataset)
+            pruned_rule.set_quality(dataset, idx_e, idx_i, p=True)
             list_pruned_rules.append(pruned_rule)
             list_quality.append(pruned_rule.quality)
 
@@ -361,7 +367,7 @@ def rule_pruning(new_rule, min_case_per_rule, dataset, idx_e, idx_i):
         f.write('\n> Created at >>> TERM ' + repr(best_rule_quality_idx))
         f.close()
 
-        if best_rule_quality < new_rule.quality:
+        if best_rule_quality <= new_rule.quality:
             f = open(p_log_file, "a+")
             f.write('\n\n================== END PRUNING FUNCTION LOOP')
             f.write('\n> Condition: best quality of new pruned rules < current rule quality')

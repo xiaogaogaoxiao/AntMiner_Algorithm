@@ -39,7 +39,7 @@ class cRule:
 
         return
 
-    def set_quality(self, dataset):
+    def set_quality(self, dataset, idx_e, idx_i, p):
 
         tp = 0
         tn = 0
@@ -62,14 +62,40 @@ class cRule:
 
         den1 = (tp + fn)
         den2 = (fp + tn)
+
         if den1 == 0:
-            den1 = 0.000001
+            self.quality = 0
         elif den2 == 0:
-            den2 = 0.000001
+            self.quality = 1
+        else:
+            self.quality = (tp / den1) * (tn / den2)
 
-        quality = (tp / den1) * (tn / den2)
+        if self.quality == 1 or 0:
+            q_log_file = "log_rule-quality-analisys.txt"
+            f = open(q_log_file, "a+")
+            f.write('\n\n\n==============================================================================================================')
+            f.write('\n=============== RULE QUALITY ANALISYS ========================================================================')
+            f.write('\n==============================================================================================================')
+            f.write('\n\n=> Code reference:')
+            f.write('\n- idx_e: ' + repr(idx_e))
+            f.write('\n- idx_i: ' + repr(idx_i))
+            f.write('\n- pruning: ' + repr(p))
+            f.write('\n\n=> Quality calculation info:')
+            f.write('\n- Quality: ' + repr(self.quality))
+            f.write('\n- TP: ' + repr(tp))
+            f.write('\n- FP: ' + repr(fp))
+            f.write('\n- FN: ' + repr(fn))
+            f.write('\n- TN: ' + repr(tn) + '\n')
+            f.close()
+            self.print_txt(q_log_file, 'Class')
 
-        self.quality = quality
+            array_log_file = "log_rule-quality-analisys_array-e" + str(idx_e) + "i" + str(idx_i) + "p" + str(p) + ".txt"
+            f = open(q_log_file, "a+")
+            f.write('\n- covered cases: ' + repr(self.covered_cases))
+            f.write('\n- number of covered cases: ' + repr(self.no_covered_cases))
+            f.write('\n\n>> DATASET USED FOR CALCULATION: ' + repr(array_log_file) + ' file <=')
+            f.close()
+            np.savetxt(array_log_file, dataset.data, fmt='%5s')
 
         return
 

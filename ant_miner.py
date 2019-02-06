@@ -2,8 +2,8 @@ from functions import *
 
 
 def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_rules_converg, fold):
-    log_file = "main_log-results.txt"
-    i_log_file = "colony-loop_log-results.txt"
+    log_file = "log_main.txt"
+    i_log_file = "log_colony-loop.txt"
     training_dataset = copy.deepcopy(dataset)
     discovered_rule_list = []
 
@@ -98,7 +98,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
                 converg_test_index += 1
                 continue
 
-            current_rule.set_quality(training_dataset)
+            current_rule.set_quality(training_dataset, idx_e, idx_i, p=False)
 
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Pruning Function: rule-pruning-fnc_log-results.txt file <=')
