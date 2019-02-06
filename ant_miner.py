@@ -4,12 +4,6 @@ from functions import *
 def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_rules_converg, fold):
     log_file = "log_main.txt"
     i_log_file = "log_colony-loop.txt"
-    training_dataset = copy.deepcopy(dataset)
-    discovered_rule_list = []
-
-    dataset_stagnation_test = 0
-    no_of_remaining_cases = len(training_dataset.data)
-
     f = open(log_file, "a+")
     f.write('\n\n\n==================== EXTERNAL LOOP ==========================================================================')
     f.write('\n> Stopping condition: number of uncovered cases')
@@ -17,6 +11,13 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
     f.write('\n============================================================================================================')
     f.write('\n FOLD OF CROSS VALIDATION: ' + repr(fold))
     f.close()
+
+    training_dataset = copy.deepcopy(dataset)
+    discovered_rule_list = []
+
+    dataset_stagnation_test = 0
+    no_of_remaining_cases = len(training_dataset.data)
+
     idx_e = 0
     while no_of_remaining_cases > max_uncovered_cases:
         idx_e += 1
@@ -46,6 +47,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         list_of_terms = get_terms(training_dataset.attr_values)
         list_of_terms = set_pheromone_init(list_of_terms)
         list_of_terms = set_heuristic_values(list_of_terms, training_dataset)
+
         f = open(log_file, "a+")
         f.write('\n> Number of terms: ' + repr(len(list_of_terms)))
         f.write('\n\n=> Internal Loop procedure: colony-loop_log-results.txt file <=\n')
@@ -58,6 +60,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         f.write('\n============================================================================================================')
         f.write('\n EXTERNAL LOOP ITERATION ' + repr(idx_e))
         f.close()
+
         idx_i = 0
         while True:
             idx_i += 1
@@ -87,6 +90,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Construction Function: rule-construction-fnc_log-results.txt file <=')
             f.close()
+
             current_rule = rule_construction(list_of_terms, min_case_per_rule, training_dataset, idx_e, idx_i)
 
             if current_rule is None:
@@ -103,6 +107,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Pruning Function: rule-pruning-fnc_log-results.txt file <=')
             f.close()
+
             current_rule_pruned = rule_pruning(current_rule, min_case_per_rule, training_dataset, idx_e, idx_i)
 
             f = open(i_log_file, "a+")
@@ -118,6 +123,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f.write('\n-Quality: ' + repr(current_rule_pruned.quality))
             f.close()
 
+            # just for log register
             if len(list_of_current_rules) >= 1:
                 last_list_rule = list_of_current_rules[-1]
                 f = open(i_log_file, "a+")

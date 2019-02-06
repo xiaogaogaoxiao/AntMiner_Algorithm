@@ -2,7 +2,7 @@ import collections
 import numpy as np
 
 
-class cRule:
+class Rule:
 
     def __init__(self, dataset):
         self.antecedent = {}
@@ -16,6 +16,49 @@ class cRule:
 
     def set_covered_cases_init(self, dataset):
         self.covered_cases = list(range(len(dataset.data)))
+        return
+
+    def set_covered_cases(self, dataset):
+
+        previous_covered_cases = list(self.covered_cases)
+
+        last_term = self.added_terms[-1]
+        last_term_attr_idx = dataset.col_index[last_term.attribute]
+        last_term_value = last_term.value
+        last_term_cases = list(np.where(dataset.data[:, last_term_attr_idx] == last_term_value)[0])
+
+        new_covered_cases = list(set(previous_covered_cases).intersection(last_term_cases))
+
+        self.covered_cases = new_covered_cases
+        self.no_covered_cases = len(new_covered_cases)
+
+        return
+
+    def set_pruned_covered_cases(self, dataset):
+
+        attr_cases = []
+        for attr in self.antecedent:
+            attr_idx = dataset.col_index[attr]
+            attr_cases.append(list(np.where(dataset.data[:, attr_idx] == self.antecedent[attr])[0]))
+
+        new_covered_cases = list(set(self.covered_cases).intersection(*attr_cases))
+
+        self.covered_cases = new_covered_cases
+        self.no_covered_cases = len(new_covered_cases)
+
+        return
+
+    def gen_pruned_rule(self, rule, attr_drop, term_idx, dataset, min_case_per_rule, idx_e, idx_i):
+        self.antecedent = rule.antecedent.copy()
+        self.added_terms = rule.added_terms[:]
+        del self.antecedent[attr_drop]
+        del self.added_terms[term_idx]
+        self.set_pruned_covered_cases(dataset)
+        self.set_consequent(dataset)
+
+        if self.no_covered_cases < min_case_per_rule:  # POSSIBLE TO HAPPEN?
+            self.quality = 0
+        self.set_quality(dataset, idx_e, idx_i, p=True)
 
         return
 
@@ -47,22 +90,21 @@ class cRule:
         fn = 0
 
         for row_idx in range(len(dataset.data)):
-
-            if row_idx in self.covered_cases:       # positive cases
+            # positive cases (TP|FP): covered by the rule
+            if row_idx in self.covered_cases:
                 if dataset.data[row_idx, dataset.col_index[dataset.class_attr]] == self.consequent:
                     tp += 1
-                else:
+                else:  # covered but doesnt have the class predicted
                     fp += 1
-
-            else:                                   # negative cases
+            # negative cases (TN|FN): not covered by the rule
+            else:
                 if dataset.data[row_idx, dataset.col_index[dataset.class_attr]] == self.consequent:
                     fn += 1
-                else:
+                else:  # not covered and doesnt have the class predicted
                     tn += 1
 
         den1 = (tp + fn)
         den2 = (fp + tn)
-
         if den1 == 0:
             self.quality = 0
         elif den2 == 0:
@@ -70,6 +112,7 @@ class cRule:
         else:
             self.quality = (tp / den1) * (tn / den2)
 
+        # just for log register
         if self.quality == 1 or 0:
             q_log_file = "log_rule-quality-analisys.txt"
             f = open(q_log_file, "a+")

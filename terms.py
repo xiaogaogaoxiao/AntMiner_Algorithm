@@ -1,9 +1,8 @@
-import collections
 import math
 import numpy as np
 
 
-class cTerms:
+class Terms:
 
     def __init__(self):
         self.attribute = ''
@@ -16,26 +15,6 @@ class cTerms:
         self.term_idx = None
 
     def set_entropy(self, dataset):
-
-        # # A PRIORI PROBABILITY: P(W)
-        # prob_apriori = {}
-        # class_freq = dict(collections.Counter(dataset.data[:, dataset.col_index[dataset.class_attr]]))
-        # for w in dataset.class_values:
-        #     prob_apriori[w] = class_freq[w]/qtd_values
-        #
-        # # EVIDANCE: P(A=V)
-        # freq = dict(collections.Counter(dataset.data[:, dataset.col_index[self.attribute]]))
-        # prob_evidance = freq[self.value]/qtd_values
-        #
-        # # LIKELIHOOD: P(A=V|W)
-        # prob_likelihood = {}
-        # for w in dataset.class_values:
-        #     value_freq = 0
-        #     for line in range(qtd_values):
-        #         if dataset.data[line, dataset.col_index[dataset.class_attr]] == w:
-        #             if dataset.data[line, dataset.col_index[self.attribute]] == self.value:
-        #                 value_freq += 1
-        #     prob_likelihood[w] = value_freq/class_freq[w]
 
         # A POSTERIORI PROBABILITY: P(W|A=V)
         class_idx = dataset.col_index[dataset.class_attr]

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-class cDataset:
+class Dataset:
 
     def __init__(self, data, class_attr):
         self.class_attr = class_attr

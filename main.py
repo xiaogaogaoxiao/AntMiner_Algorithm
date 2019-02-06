@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score
 
-from dataset import cDataset
+from dataset import Dataset
 from k_fold_crossvalidation import k_fold
 from ant_miner import *
 from data_preprocessing import data_analysis
@@ -52,8 +52,8 @@ def main():
         f.close()
 
         # Objects: TRAINING AND TEST DATASETS
-        training_dataset = cDataset(training_data, class_attr)
-        test_dataset = cDataset(test_data, class_attr)
+        training_dataset = Dataset(training_data, class_attr)
+        test_dataset = Dataset(test_data, class_attr)
 
         # ANT-MINER ALGORITHM: list of rules generator
         f = open(log_file, "a+")
