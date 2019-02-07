@@ -1,5 +1,5 @@
 from functions import *
-from terms_list import TermsManager
+from terms_manager import TermsManager
 from rule import Rule
 
 
@@ -34,7 +34,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         list_of_current_rules = []
         list_of_current_rules_quality = []
 
-        terms = TermsManager(training_dataset, min_case_per_rule)
+        terms_mgr = TermsManager(training_dataset, min_case_per_rule)
         # list_of_terms = get_terms(training_dataset.attr_values)
         # list_of_terms = set_pheromone_init(list_of_terms)
         # list_of_terms = set_heuristic_values(list_of_terms, training_dataset)
@@ -53,7 +53,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             break
 
         f = open(log_file, "a+")
-        f.write('\n> Number of terms: ' + repr(len(terms.size())))
+        f.write('\n> Number of terms: ' + repr(len(terms_mgr.size())))
         f.write('\n\n=> Internal Loop procedure: colony-loop_log-results.txt file <=\n')
         f.close()
 
@@ -88,24 +88,15 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f.write('\n\n=> Rule Construction Function: rule-construction-fnc_log-results.txt file <=')
             f.close()
             current_rule = Rule(training_dataset)
-            current_rule.construct(terms, min_case_per_rule, idx_e, idx_i)
+            current_rule.construct(terms_mgr, min_case_per_rule, idx_e, idx_i)
             # current_rule = rule_construction(list_of_terms, min_case_per_rule, training_dataset, idx_e, idx_i)
-
-            # Case Rule-Constructed is NONE >> check necessity !!!
-            if current_rule is None:
-                f = open(i_log_file, "a+")
-                f.write('\n!!! Empty Rule Constructed !!!')
-                f.close()
-                # print('Empty rule')
-                ant_index += 1
-                converg_test_index += 1
-                continue
 
             # RULE PRUNING
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Pruning Function: rule-pruning-fnc_log-results.txt file <=')
             f.close()
-            current_rule_pruned = rule_pruning(current_rule, min_case_per_rule, training_dataset, idx_e, idx_i)
+            current_rule.prune(idx_e, idx_i)
+            # current_rule_pruned = rule_pruning(current_rule, min_case_per_rule, training_dataset, idx_e, idx_i)
 
             f = open(i_log_file, "a+")
             f.write('\n\n> Rule Constructed:')
@@ -144,6 +135,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
                 f.write('\n!!! Pruned Rule added to current_rule_list')
                 f.close()
 
+            terms_mgr.pheromone_updating()
             list_of_terms = pheromone_updating(list_of_terms, current_rule_pruned)
             ant_index += 1
         # END OF COLONY LOOP

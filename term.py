@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 
-class Terms:
+class Term:
 
     def __init__(self, attr, value, dataset, min_case_per_rule):
         self.attribute = attr

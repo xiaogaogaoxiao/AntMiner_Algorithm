@@ -10,8 +10,9 @@ class Rule:
         self.covered_cases = list(range(len(dataset.data)))
         self.no_covered_cases = len(dataset.data)
         self.quality = 0
+        self.__dataset = dataset
 
-    def construct(self, terms, min_case_per_rule, idx_e, idx_i):
+    def construct(self, terms_mgr, min_case_per_rule, idx_e, idx_i):
         c_log_file = "log_rule-construct.txt"
         f = open(c_log_file, "a+")
         f.write('\n\n\n=============== RULE CONSTRUCTION LOOP ======================================================================')
@@ -31,34 +32,36 @@ class Rule:
             f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx))
             f.close()
             f = open(c_log_file, "a+")
-            f.write('\n> List_of_terms size: ' + repr(len(terms.size())))
+            f.write('\n> List_of_terms size: ' + repr(len(terms_mgr.size())))
             f.write('\n\n==> CURRENT RULE:')
             f.close()
             self.print_txt(c_log_file, 'Class')
 
-            if terms.size() == 0:
+            if not terms_mgr.available():
                 f = open(c_log_file, "a+")
                 f.write('\n\n=============== END CONSTRUCTION')
                 f.write('\n> Condition: empty terms list')
-                f.write('\n   - current_list_of_terms size = ' + repr(len(terms.size())))
+                f.write('\n   - current_list_of_terms size = ' + repr(len(terms_mgr.size())))
                 f.write('\n   - iteration number = ' + repr(idx))
                 f.close()
                 break
 
-            sorted_term = terms.sort_term()
-            covered_cases = list(set(sorted_term.covered_cases) & set(self.covered_cases))
+            attribute, value, cases = terms_mgr.sort_term()
+            covered_cases = list(set(cases) & set(self.covered_cases))
+
             f = open(c_log_file, "a+")
-            f.write('\n\n==> TERM TO BE ADDED: Attribute='+repr(sorted_term.attribute)+' Value='+repr(sorted_term.value))
+            f.write('\n\n==> TERM TO BE ADDED: Attribute='+repr(attribute)+' Value='+repr(value))
             f.write('\n- Current rule covered cases: ' + repr(self.covered_cases))
-            f.write('\n- Sorted term covered cases: ' + repr(sorted_term.covered_cases))
+            f.write('\n- Sorted term covered cases: ' + repr(cases))
             f.write('\n- Intersection covered cases: ' + repr(covered_cases))
             f.write('\n- Number of intersection covered cases: ' + repr(len(covered_cases)))
             f.close()
 
             if len(covered_cases) >= min_case_per_rule:
-                self.antecedent[sorted_term.attribute] = sorted_term.value
+                self.antecedent[attribute] = value
                 self.covered_cases = covered_cases
                 self.no_covered_cases = len(self.covered_cases)
+                terms_mgr.update_availability(attribute)
 
                 f = open(c_log_file, "a+")
                 f.write('\n\n==> NEW CONSTRUCTED RULE:')
@@ -68,75 +71,61 @@ class Rule:
                 f = open(c_log_file, "a+")
                 f.write('\n\n=============== END CONSTRUCTION')
                 f.write('\n> Condition: new rule doesnt cover minimum cases')
-                f.write('\n   - current_list_of_terms size = ' + repr(len(list_of_terms.size())))
+                f.write('\n   - current_list_of_terms size = ' + repr(len(terms_mgr.size())))
                 f.write('\n   - iteration number = ' + repr(idx))
                 f.close()
                 break
 
-            terms.update()
-
         # CONSEQUENT SELECTION
+        self.__set_consequent()
 
         # SET QUALITY
+        self.__set_quality(idx_e, idx_i, p=False)
+
+        f = open(c_log_file, "a+")
+        f.write('\n\n>>> FINAL RULE ')
+        f.close()
+        self.print_txt(c_log_file, 'Class')
+        f = open(c_log_file, "a+")
+        f.write('\n-no_covered_cases: ' + repr(self.no_covered_cases))
+        f.write('\n-quality: ' + repr(self.quality))
+        f.write('\n\n> Number of iterations: ' + repr(idx))
+        f.close()
 
         return
 
-    def set_covered_cases(self, dataset):
-
-        previous_covered_cases = list(self.covered_cases)
-
-        last_term = self.added_terms[-1]
-        last_term_attr_idx = dataset.col_index[last_term.attribute]
-        last_term_value = last_term.value
-        last_term_cases = list(np.where(dataset.data[:, last_term_attr_idx] == last_term_value)[0])
-
-        new_covered_cases = list(set(previous_covered_cases).intersection(last_term_cases))
-
-        self.covered_cases = new_covered_cases
-        self.no_covered_cases = len(new_covered_cases)
-
+    def prune(self, idx_e, idx_i):
+        p_log_file = "log_rule-pruning-fnc.txt"
+        f = open(p_log_file, "a+")
+        f.write('\n\n\n================== RULE PRUNING LOOP =========================================================================')
+        f.write('\n> Stopping condition: pruned rule quality be less than best quality so far or if pruned rule antecedent has just one term')
+        f.write('\n> Receives constructed rule > drops each term on antecedent, sequentially from first to last > each term dropped consists on another rule > new pruned rule is the one of higher quality ')
+        f.write('\n> IF no new rules have higher quality than the new pruned rule, or if new pruned rule has oly one term in the antecedent > returns pruned rule')
+        f.write('\n==============================================================================================================')
+        f.write('\n EXTERNAL LOOP ITERATION ' + repr(idx_e))
+        f.write('\n INTERNAL LOOP ITERATION ' + repr(idx_i))
+        f.write('\n\n> RULE TO BE PRUNED :')
+        f.close()
+        self.print_txt(p_log_file, 'Class')
+        f = open(p_log_file, "a+")
+        f.write('\n-Number of covered cases: ' + repr(self.no_covered_cases))
+        f.write('\n-Quality: ' + repr(self.quality))
+        f.close()
         return
 
-    def set_pruned_covered_cases(self, dataset):
+    def __set_consequent(self):
 
-        attr_cases = []
-        for attr in self.antecedent:
-            attr_idx = dataset.col_index[attr]
-            attr_cases.append(list(np.where(dataset.data[:, attr_idx] == self.antecedent[attr])[0]))
-
-        new_covered_cases = list(set(self.covered_cases).intersection(*attr_cases))
-
-        self.covered_cases = new_covered_cases
-        self.no_covered_cases = len(new_covered_cases)
-
-        return
-
-    def gen_pruned_rule(self, rule, attr_drop, term_idx, dataset, min_case_per_rule, idx_e, idx_i):
-        self.antecedent = rule.antecedent.copy()
-        self.added_terms = rule.added_terms[:]
-        del self.antecedent[attr_drop]
-        del self.added_terms[term_idx]
-        self.set_pruned_covered_cases(dataset)
-        self.set_consequent(dataset)
-
-        if self.no_covered_cases < min_case_per_rule:  # POSSIBLE TO HAPPEN?
-            self.quality = 0
-        self.set_quality(dataset, idx_e, idx_i, p=True)
-
-        return
-
-    def set_consequent(self, dataset):
-
-        covered_cases = []
-        for case in self.covered_cases:
-            covered_cases.append(dataset.data[case])
-
-        covered_cases = np.array(covered_cases)
-        class_freq = dict(collections.Counter(covered_cases[:, dataset.col_index[dataset.class_attr]]))
-
+        class_idx = self.__dataset.col_index[self.__dataset.class_attr]
+        covered_rows = []
         max_freq = 0
         class_chosen = None
-        for w in class_freq:                # other way: class_chosen <= max(class_freq[])
+
+        for row in self.covered_cases:
+            covered_rows.append(self.__dataset.data[row])
+        covered_rows = np.array(covered_rows)
+
+        class_freq = dict(collections.Counter(covered_rows[:, class_idx]))
+        for w in class_freq:
             if class_freq[w] > max_freq:
                 class_chosen = w
                 max_freq = class_freq[w]
@@ -145,24 +134,24 @@ class Rule:
 
         return
 
-    def set_quality(self, dataset, idx_e, idx_i, p):
+    def __set_quality(self, idx_e, idx_i, p):
 
         tp = 0
         tn = 0
         fp = 0
         fn = 0
-        col_class = dataset.col_index[dataset.class_attr]
+        class_idx = self.__dataset.col_index[self.__dataset.class_attr]
 
-        for row_idx in range(len(dataset.data)):
+        for row_idx in range(len(self.__dataset.data)):
             # positive cases (TP|FP): covered by the rule
             if row_idx in self.covered_cases:
-                if dataset.data[row_idx, col_class] == self.consequent:
+                if self.__dataset.data[row_idx, class_idx] == self.consequent:
                     tp += 1
                 else:  # covered but doesnt have the class predicted
                     fp += 1
             # negative cases (TN|FN): not covered by the rule
             else:
-                if dataset.data[row_idx, col_class] == self.consequent:
+                if self.__dataset.data[row_idx, class_idx] == self.consequent:
                     fn += 1
                 else:  # not covered and doesnt have the class predicted
                     tn += 1
@@ -202,7 +191,37 @@ class Rule:
             f.write('\n- number of covered cases: ' + repr(self.no_covered_cases))
             f.write('\n\n>> DATASET USED FOR CALCULATION: ' + repr(array_log_file) + ' file <=')
             f.close()
-            np.savetxt(array_log_file, dataset.data, fmt='%5s')
+            np.savetxt(array_log_file, self.__dataset.data, fmt='%5s')
+
+        return
+
+# ======================================================================================================================
+
+    def set_pruned_covered_cases(self, dataset):
+
+        attr_cases = []
+        for attr in self.antecedent:
+            attr_idx = dataset.col_index[attr]
+            attr_cases.append(list(np.where(dataset.data[:, attr_idx] == self.antecedent[attr])[0]))
+
+        new_covered_cases = list(set(self.covered_cases).intersection(*attr_cases))
+
+        self.covered_cases = new_covered_cases
+        self.no_covered_cases = len(new_covered_cases)
+
+        return
+
+    def gen_pruned_rule(self, rule, attr_drop, term_idx, dataset, min_case_per_rule, idx_e, idx_i):
+        self.antecedent = rule.antecedent.copy()
+        self.added_terms = rule.added_terms[:]
+        del self.antecedent[attr_drop]
+        del self.added_terms[term_idx]
+        self.set_pruned_covered_cases(dataset)
+        self.set_consequent(dataset)
+
+        if self.no_covered_cases < min_case_per_rule:  # POSSIBLE TO HAPPEN?
+            self.quality = 0
+        self.set_quality(dataset, idx_e, idx_i, p=True)
 
         return
 

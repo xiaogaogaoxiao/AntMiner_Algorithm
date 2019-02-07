@@ -1,7 +1,7 @@
 import copy
 import collections
 import numpy as np
-from terms import Terms
+from term import Term
 from rule import Rule
 
 
@@ -42,191 +42,191 @@ from rule import Rule
 #     return list_of_terms
 
 
-def set_probability_values(list_of_terms):
-
-    denominator = 0
-
-    for term in list_of_terms:
-        den = term.heuristic * term.pheromone
-        denominator = denominator + den
-
-    for term in list_of_terms:
-        term.set_probability(denominator)
-
-    return list_of_terms
-
-
-def sort_term(list_of_terms, c_log_file):
-
-    f = open(c_log_file, "a+")
-    f.write('\n\n> TERM SORT:')
-    f.close()
-
-    term_chosen = None
-    index = None
-
-    terms_prob_sum = 0
-    for term in list_of_terms:
-        terms_prob_sum = terms_prob_sum + term.probability
-
-    if terms_prob_sum == 0:
-        return term_chosen, index
-
-    number_sort = np.random.rand()
-    f = open(c_log_file, "a+")
-    f.write('\n- Sorted random number: ' + repr(number_sort))
-    f.close()
-
-    f = open(c_log_file, "a+")
-    f.write('\n\nSorting...:')
-    f.close()
-    probabilities_sort = 0
-    for term_idx, term in enumerate(list_of_terms):
-
-        prob_norm = term.probability/terms_prob_sum
-        probabilities_sort = probabilities_sort + prob_norm
-
-        f = open(c_log_file, "a+")
-        f.write('\n-Term ' + repr(term_idx) + ': Term_prob=' + repr(prob_norm) + ' Accum_Prob=' + repr(probabilities_sort))
-        f.close()
-
-        if number_sort <= probabilities_sort:
-            term_chosen = term
-            index = list_of_terms.index(term)
-            break
-
-    f = open(c_log_file, "a+")
-    f.write('\n\n-> Term Sorted: Term ' + repr(index))
-    f.close()
-
-    return term_chosen, index
+# def set_probability_values(list_of_terms):
+#
+#     denominator = 0
+#
+#     for term in list_of_terms:
+#         den = term.heuristic * term.pheromone
+#         denominator = denominator + den
+#
+#     for term in list_of_terms:
+#         term.set_probability(denominator)
+#
+#     return list_of_terms
 
 
-def list_terms_updating(list_of_terms, attribute):
+# def sort_term(list_of_terms, c_log_file):
+#
+#     f = open(c_log_file, "a+")
+#     f.write('\n\n> TERM SORT:')
+#     f.close()
+#
+#     term_chosen = None
+#     index = None
+#
+#     terms_prob_sum = 0
+#     for term in list_of_terms:
+#         terms_prob_sum = terms_prob_sum + term.probability
+#
+#     if terms_prob_sum == 0:
+#         return term_chosen, index
+#
+#     number_sort = np.random.rand()
+#     f = open(c_log_file, "a+")
+#     f.write('\n- Sorted random number: ' + repr(number_sort))
+#     f.close()
+#
+#     f = open(c_log_file, "a+")
+#     f.write('\n\nSorting...:')
+#     f.close()
+#     probabilities_sort = 0
+#     for term_idx, term in enumerate(list_of_terms):
+#
+#         prob_norm = term.probability/terms_prob_sum
+#         probabilities_sort = probabilities_sort + prob_norm
+#
+#         f = open(c_log_file, "a+")
+#         f.write('\n-Term ' + repr(term_idx) + ': Term_prob=' + repr(prob_norm) + ' Accum_Prob=' + repr(probabilities_sort))
+#         f.close()
+#
+#         if number_sort <= probabilities_sort:
+#             term_chosen = term
+#             index = list_of_terms.index(term)
+#             break
+#
+#     f = open(c_log_file, "a+")
+#     f.write('\n\n-> Term Sorted: Term ' + repr(index))
+#     f.close()
+#
+#     return term_chosen, index
 
-    new_list = []
-    for term in list_of_terms:
-        if term.attribute != attribute:
-            new_list.append(term)
-            # list_of_terms.pop(term)
 
-    return new_list
+# def list_terms_updating(list_of_terms, attribute):
+#
+#     new_list = []
+#     for term in list_of_terms:
+#         if term.attribute != attribute:
+#             new_list.append(term)
+#             # list_of_terms.pop(term)
+#
+#     return new_list
 
 
-def rule_construction(list_of_terms, min_case_per_rule, dataset, idx_e, idx_i):
-    c_log_file = "log_rule-construction-fnc.txt"
-    f = open(c_log_file, "a+")
-    f.write('\n\n\n=============== RULE CONSTRUCTION LOOP ======================================================================')
-    f.write('\n> Stopping condition: rule cover less than minimum cases or there is no more attributes to be added')
-    f.write('\n> Sequential construction: Sort a term to be added to rule > check number of covered cases ')
-    f.write('\n> IF Stopping condition: set rule consequent')
-    f.write('\n=============================================================================================================')
-    f.write('\n EXTERNAL LOOP ITERATION ' + repr(idx_e))
-    f.write('\n INTERNAL LOOP ITERATION ' + repr(idx_i))
-    f.close()
-    idx = 0
-
-    new_rule = Rule(dataset)
-    current_list_of_terms = copy.deepcopy(list_of_terms)
-
-    # Antecedent construction
-    while True:
-        idx += 1
-        f = open(c_log_file, "a+")
-        f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx))
-        f.close()
-        f = open(c_log_file, "a+")
-        f.write('\n\n==> SEQUENTIAL CONSTRUCTION:')
-        f.write('\n> List_of_terms size: ' + repr(len(current_list_of_terms)))
-        f.close()
-
-        previous_rule = copy.deepcopy(new_rule)
-
-        if not current_list_of_terms:
-            f = open(c_log_file, "a+")
-            f.write('\n\n=============== END CONSTRUCTION')
-            f.write('\n> Condition: empty terms list')
-            f.write('\n   - current_list_of_terms size = ' + repr(len(current_list_of_terms)))
-            f.write('\n   - iteration number = ' + repr(idx))
-            f.close()
-            break
-
-        # Sorting term
-        current_list_of_terms = set_probability_values(current_list_of_terms)
-        term_2b_added, term_2b_added_index = sort_term(current_list_of_terms, c_log_file)
-
-        if term_2b_added is None:   # !!! CHECK NECESSITY
-            f = open(c_log_file, "a+")
-            f.write('\n\n>>>>> END Construction')
-            f.write('\n!! Alternative Condition: empty term_2b_added')
-            f.close()
-            break
-        f = open(c_log_file, "a+")
-        f.write('\n\n> TERM TO BE ADDED: Attribute=' + repr(term_2b_added.attribute) + ' Value=' + repr(term_2b_added.value))
-        f.close()
-
-        # Adding term and updating rule-obj
-        new_rule.antecedent[term_2b_added.attribute] = term_2b_added.value
-        new_rule.added_terms.append(term_2b_added)
-        new_rule.set_covered_cases(dataset)
-
-        f = open(c_log_file, "a+")
-        f.write('\n\n==> CONSTRUCTION ITERATION ' + repr(idx) + ' RESULTS:')
-        f.write('\n- Constructed Rule:')
-        f.close()
-        new_rule.print_txt(c_log_file, 'Class')
-        f = open(c_log_file, "a+")
-        f.write('\n- Previous Rule:')
-        f.close()
-        previous_rule.print_txt(c_log_file, 'Class')
-
-        if new_rule.no_covered_cases < min_case_per_rule:
-            f = open(c_log_file, "a+")
-            f.write('\n\n=============== END CONSTRUCTION')
-            f.write('\n> Condition: constructed_rule.no_covered_cases < min_case_per_rule')
-            f.write('\n\n> Last constructed rule: (condition = true)')
-            f.close()
-            new_rule.print_txt(c_log_file, 'Class')
-            f = open(c_log_file, "a+")
-            f.write('\n-no_covered_cases: ' + repr(new_rule.no_covered_cases))
-            f.close()
-
-            new_rule = copy.deepcopy(previous_rule)
-
-            f = open(c_log_file, "a+")
-            f.write('\n\n> Previous constructed rule:')
-            f.close()
-            new_rule.print_txt(c_log_file, 'Class')
-            f = open(c_log_file, "a+")
-            f.write('\n-no_covered_cases: ' + repr(new_rule.no_covered_cases))
-            f.close()
-            break
-
-        current_list_of_terms = list_terms_updating(current_list_of_terms, term_2b_added.attribute)
-
-    if not new_rule.antecedent:
-        f = open(c_log_file, "a+")
-        f.write('\n\n>>>>> WARNING')
-        f.write('\n!! No rule antecedent constructed')
-        f.write('\n  - Number of iterations: ' + repr(idx))
-        f.close()
-        return None
-
-    # Consequent selection
-    new_rule.set_consequent(dataset)
-    new_rule.set_quality(dataset, idx_e, idx_i, p=False)
-
-    f = open(c_log_file, "a+")
-    f.write('\n\n>>> FINAL RULE ')
-    f.close()
-    new_rule.print_txt(c_log_file, 'Class')
-    f = open(c_log_file, "a+")
-    f.write('\n-no_covered_cases: ' + repr(new_rule.no_covered_cases))
-    f.write('\n-quality: ' + repr(new_rule.quality))
-    f.write('\n\n> Number of iterations: ' + repr(idx))
-    f.close()
-
-    return new_rule
+# def rule_construction(list_of_terms, min_case_per_rule, dataset, idx_e, idx_i):
+#     c_log_file = "log_rule-construction-fnc.txt"
+#     f = open(c_log_file, "a+")
+#     f.write('\n\n\n=============== RULE CONSTRUCTION LOOP ======================================================================')
+#     f.write('\n> Stopping condition: rule cover less than minimum cases or there is no more attributes to be added')
+#     f.write('\n> Sequential construction: Sort a term to be added to rule > check number of covered cases ')
+#     f.write('\n> IF Stopping condition: set rule consequent')
+#     f.write('\n=============================================================================================================')
+#     f.write('\n EXTERNAL LOOP ITERATION ' + repr(idx_e))
+#     f.write('\n INTERNAL LOOP ITERATION ' + repr(idx_i))
+#     f.close()
+#     idx = 0
+#
+#     new_rule = Rule(dataset)
+#     current_list_of_terms = copy.deepcopy(list_of_terms)
+#
+#     # Antecedent construction
+#     while True:
+#         idx += 1
+#         f = open(c_log_file, "a+")
+#         f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx))
+#         f.close()
+#         f = open(c_log_file, "a+")
+#         f.write('\n\n==> SEQUENTIAL CONSTRUCTION:')
+#         f.write('\n> List_of_terms size: ' + repr(len(current_list_of_terms)))
+#         f.close()
+#
+#         previous_rule = copy.deepcopy(new_rule)
+#
+#         if not current_list_of_terms:
+#             f = open(c_log_file, "a+")
+#             f.write('\n\n=============== END CONSTRUCTION')
+#             f.write('\n> Condition: empty terms list')
+#             f.write('\n   - current_list_of_terms size = ' + repr(len(current_list_of_terms)))
+#             f.write('\n   - iteration number = ' + repr(idx))
+#             f.close()
+#             break
+#
+#         # Sorting term
+#         current_list_of_terms = set_probability_values(current_list_of_terms)
+#         term_2b_added, term_2b_added_index = sort_term(current_list_of_terms, c_log_file)
+#
+#         if term_2b_added is None:   # !!! CHECK NECESSITY
+#             f = open(c_log_file, "a+")
+#             f.write('\n\n>>>>> END Construction')
+#             f.write('\n!! Alternative Condition: empty term_2b_added')
+#             f.close()
+#             break
+#         f = open(c_log_file, "a+")
+#         f.write('\n\n> TERM TO BE ADDED: Attribute=' + repr(term_2b_added.attribute) + ' Value=' + repr(term_2b_added.value))
+#         f.close()
+#
+#         # Adding term and updating rule-obj
+#         new_rule.antecedent[term_2b_added.attribute] = term_2b_added.value
+#         new_rule.added_terms.append(term_2b_added)
+#         new_rule.set_covered_cases(dataset)
+#
+#         f = open(c_log_file, "a+")
+#         f.write('\n\n==> CONSTRUCTION ITERATION ' + repr(idx) + ' RESULTS:')
+#         f.write('\n- Constructed Rule:')
+#         f.close()
+#         new_rule.print_txt(c_log_file, 'Class')
+#         f = open(c_log_file, "a+")
+#         f.write('\n- Previous Rule:')
+#         f.close()
+#         previous_rule.print_txt(c_log_file, 'Class')
+#
+#         if new_rule.no_covered_cases < min_case_per_rule:
+#             f = open(c_log_file, "a+")
+#             f.write('\n\n=============== END CONSTRUCTION')
+#             f.write('\n> Condition: constructed_rule.no_covered_cases < min_case_per_rule')
+#             f.write('\n\n> Last constructed rule: (condition = true)')
+#             f.close()
+#             new_rule.print_txt(c_log_file, 'Class')
+#             f = open(c_log_file, "a+")
+#             f.write('\n-no_covered_cases: ' + repr(new_rule.no_covered_cases))
+#             f.close()
+#
+#             new_rule = copy.deepcopy(previous_rule)
+#
+#             f = open(c_log_file, "a+")
+#             f.write('\n\n> Previous constructed rule:')
+#             f.close()
+#             new_rule.print_txt(c_log_file, 'Class')
+#             f = open(c_log_file, "a+")
+#             f.write('\n-no_covered_cases: ' + repr(new_rule.no_covered_cases))
+#             f.close()
+#             break
+#
+#         current_list_of_terms = list_terms_updating(current_list_of_terms, term_2b_added.attribute)
+#
+#     if not new_rule.antecedent:
+#         f = open(c_log_file, "a+")
+#         f.write('\n\n>>>>> WARNING')
+#         f.write('\n!! No rule antecedent constructed')
+#         f.write('\n  - Number of iterations: ' + repr(idx))
+#         f.close()
+#         return None
+#
+#     # Consequent selection
+#     new_rule.set_consequent(dataset)
+#     new_rule.set_quality(dataset, idx_e, idx_i, p=False)
+#
+#     f = open(c_log_file, "a+")
+#     f.write('\n\n>>> FINAL RULE ')
+#     f.close()
+#     new_rule.print_txt(c_log_file, 'Class')
+#     f = open(c_log_file, "a+")
+#     f.write('\n-no_covered_cases: ' + repr(new_rule.no_covered_cases))
+#     f.write('\n-quality: ' + repr(new_rule.quality))
+#     f.write('\n\n> Number of iterations: ' + repr(idx))
+#     f.close()
+#
+#     return new_rule
 
 
 def rule_pruning(rule, min_case_per_rule, dataset, idx_e, idx_i):
