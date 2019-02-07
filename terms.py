@@ -20,20 +20,20 @@ class Terms:
         class_idx = dataset.col_index[dataset.class_attr]
         attr_idx = dataset.col_index[self.attribute]
         data = dataset.data
-        rows = list(np.where(data[:, attr_idx] == self.value)[0])
-        value_freq = len(rows)
+        rows = list(np.where(data[:, attr_idx] == self.value)[0])  # list of row index where < self.attr = self.value >
+        term_freq = len(rows)
 
-        prob_posteriori = {}.fromkeys(dataset.class_values, 0)
+        class_freq = {}.fromkeys(dataset.class_values, 0)
         for r in rows:
-            prob_posteriori[data[r, class_idx]] += 1
+            class_freq[data[r, class_idx]] += 1
 
         # ENTROPY
-        if value_freq > 0:
+        if term_freq > 0:
             entropy = 0
-            for w in prob_posteriori:
-                w_freq = prob_posteriori[w]
-                if w_freq != 0:
-                    entropy -= w_freq * math.log2(w_freq)
+            for w in class_freq:
+                prob_posteriori = class_freq[w]/term_freq
+                if prob_posteriori != 0:
+                    entropy -= prob_posteriori * math.log2(prob_posteriori)
             self.entropy = entropy
         else:
             print('Heuristic calc error: Term value doesnt appear in current dataset')

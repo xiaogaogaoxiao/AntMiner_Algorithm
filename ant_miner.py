@@ -96,8 +96,6 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
                 converg_test_index += 1
                 continue
 
-            # current_rule.set_quality(training_dataset, idx_e, idx_i, p=False)  # !! put it inside rule_construction
-
             # RULE PRUNING
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Pruning Function: rule-pruning-fnc_log-results.txt file <=')
@@ -141,14 +139,6 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
                 f.write('\n!!! Pruned Rule added to current_rule_list')
                 f.close()
 
-            # if converg_test_index == 1:
-            #     list_of_current_rules.append(current_rule_pruned)
-            #     list_of_current_rules_quality.append(current_rule_pruned.quality)
-            #     f = open(i_log_file, "a+")
-            #     f.write('\n\n!!! Pruned Constructed Rule did not converged')
-            #     f.write('\n!!! Pruned Rule added to current_rule_list')
-            #     f.close()
-
             list_of_terms = pheromone_updating(list_of_terms, current_rule_pruned)
             ant_index += 1
         # END OF COLONY LOOP
@@ -158,7 +148,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f = open(i_log_file, "a+")
             f.write('\n\n!!! WARNING: Internal Loop added no rule quality to list_of_current_rules_quality > continue')
             f.close()
-            continue
+            continue  # GOES BACK TO LOOP WHILE UNCOVERED CASES
 
         best_rule_idx = list_of_current_rules_quality.index(max(list_of_current_rules_quality))
         best_rule = copy.deepcopy(list_of_current_rules[best_rule_idx])

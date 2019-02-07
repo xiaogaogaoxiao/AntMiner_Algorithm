@@ -155,7 +155,7 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset, idx_e, idx_i):
         current_list_of_terms = set_probability_values(current_list_of_terms)
         term_2b_added, term_2b_added_index = sort_term(current_list_of_terms, c_log_file)
 
-        if term_2b_added is None:
+        if term_2b_added is None:   # !!! CHECK NECESSITY
             f = open(c_log_file, "a+")
             f.write('\n\n>>>>> END Construction')
             f.write('\n!! Alternative Condition: empty term_2b_added')
@@ -165,7 +165,7 @@ def rule_construction(list_of_terms, min_case_per_rule, dataset, idx_e, idx_i):
         f.write('\n\n> TERM TO BE ADDED: Attribute=' + repr(term_2b_added.attribute) + ' Value=' + repr(term_2b_added.value))
         f.close()
 
-        # Adding term and updating term-obj
+        # Adding term and updating rule-obj
         new_rule.antecedent[term_2b_added.attribute] = term_2b_added.value
         new_rule.added_terms.append(term_2b_added)
         new_rule.set_covered_cases(dataset)
