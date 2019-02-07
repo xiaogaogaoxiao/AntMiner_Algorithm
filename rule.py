@@ -7,15 +7,78 @@ class Rule:
     def __init__(self, dataset):
         self.antecedent = {}
         self.consequent = None
-        self.added_terms = []
-        self.covered_cases = []
-        self.no_covered_cases = None
+        self.covered_cases = list(range(len(dataset.data)))
+        self.no_covered_cases = len(dataset.data)
         self.quality = 0
 
-        self.set_covered_cases_init(dataset)
+    def construct(self, terms, min_case_per_rule, idx_e, idx_i):
+        c_log_file = "log_rule-construct.txt"
+        f = open(c_log_file, "a+")
+        f.write('\n\n\n=============== RULE CONSTRUCTION LOOP ======================================================================')
+        f.write('\n> Stopping condition: rule cover less than minimum cases or there is no more attributes to be added')
+        f.write('\n> Sequential construction: Sort a term to be added to rule > check number of covered cases ')
+        f.write('\n> IF Stopping condition: set rule consequent')
+        f.write('\n=============================================================================================================')
+        f.write('\n EXTERNAL LOOP ITERATION ' + repr(idx_e))
+        f.write('\n INTERNAL LOOP ITERATION ' + repr(idx_i))
+        f.close()
+        idx = 0
 
-    def set_covered_cases_init(self, dataset):
-        self.covered_cases = list(range(len(dataset.data)))
+        # ANTECEDENT CONSTRUCTION
+        while True:
+            idx += 1
+            f = open(c_log_file, "a+")
+            f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx))
+            f.close()
+            f = open(c_log_file, "a+")
+            f.write('\n> List_of_terms size: ' + repr(len(terms.size())))
+            f.write('\n\n==> CURRENT RULE:')
+            f.close()
+            self.print_txt(c_log_file, 'Class')
+
+            if terms.size() == 0:
+                f = open(c_log_file, "a+")
+                f.write('\n\n=============== END CONSTRUCTION')
+                f.write('\n> Condition: empty terms list')
+                f.write('\n   - current_list_of_terms size = ' + repr(len(terms.size())))
+                f.write('\n   - iteration number = ' + repr(idx))
+                f.close()
+                break
+
+            sorted_term = terms.sort_term()
+            covered_cases = list(set(sorted_term.covered_cases) & set(self.covered_cases))
+            f = open(c_log_file, "a+")
+            f.write('\n\n==> TERM TO BE ADDED: Attribute='+repr(sorted_term.attribute)+' Value='+repr(sorted_term.value))
+            f.write('\n- Current rule covered cases: ' + repr(self.covered_cases))
+            f.write('\n- Sorted term covered cases: ' + repr(sorted_term.covered_cases))
+            f.write('\n- Intersection covered cases: ' + repr(covered_cases))
+            f.write('\n- Number of intersection covered cases: ' + repr(len(covered_cases)))
+            f.close()
+
+            if len(covered_cases) >= min_case_per_rule:
+                self.antecedent[sorted_term.attribute] = sorted_term.value
+                self.covered_cases = covered_cases
+                self.no_covered_cases = len(self.covered_cases)
+
+                f = open(c_log_file, "a+")
+                f.write('\n\n==> NEW CONSTRUCTED RULE:')
+                f.close()
+                self.print_txt(c_log_file, 'Class')
+            else:
+                f = open(c_log_file, "a+")
+                f.write('\n\n=============== END CONSTRUCTION')
+                f.write('\n> Condition: new rule doesnt cover minimum cases')
+                f.write('\n   - current_list_of_terms size = ' + repr(len(list_of_terms.size())))
+                f.write('\n   - iteration number = ' + repr(idx))
+                f.close()
+                break
+
+            terms.update()
+
+        # CONSEQUENT SELECTION
+
+        # SET QUALITY
+
         return
 
     def set_covered_cases(self, dataset):
@@ -88,17 +151,18 @@ class Rule:
         tn = 0
         fp = 0
         fn = 0
+        col_class = dataset.col_index[dataset.class_attr]
 
         for row_idx in range(len(dataset.data)):
             # positive cases (TP|FP): covered by the rule
             if row_idx in self.covered_cases:
-                if dataset.data[row_idx, dataset.col_index[dataset.class_attr]] == self.consequent:
+                if dataset.data[row_idx, col_class] == self.consequent:
                     tp += 1
                 else:  # covered but doesnt have the class predicted
                     fp += 1
             # negative cases (TN|FN): not covered by the rule
             else:
-                if dataset.data[row_idx, dataset.col_index[dataset.class_attr]] == self.consequent:
+                if dataset.data[row_idx, col_class] == self.consequent:
                     fn += 1
                 else:  # not covered and doesnt have the class predicted
                     tn += 1

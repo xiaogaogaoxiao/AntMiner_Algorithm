@@ -5,41 +5,41 @@ from terms import Terms
 from rule import Rule
 
 
-def get_terms(dict_attr_values):
-
-    list_of_terms = []
-    idx = 0
-    for a in dict_attr_values:
-        for v in dict_attr_values[a]:
-            term_obj = Terms()
-            term_obj.attribute = a
-            term_obj.value = v
-            term_obj.term_idx = idx
-            list_of_terms.append(term_obj)
-            idx += 1
-
-    return list_of_terms
-
-
-def set_pheromone_init(list_of_terms):
-
-    for term in list_of_terms:
-        term.pheromone = 1/len(list_of_terms)
-
-    return list_of_terms
+# def get_terms(dict_attr_values):
+#
+#     list_of_terms = []
+#     idx = 0
+#     for a in dict_attr_values:
+#         for v in dict_attr_values[a]:
+#             term_obj = Terms()
+#             term_obj.attribute = a
+#             term_obj.value = v
+#             term_obj.term_idx = idx
+#             list_of_terms.append(term_obj)
+#             idx += 1
+#
+#     return list_of_terms
 
 
-def set_heuristic_values(list_of_terms, dataset):
+# def set_pheromone_init(list_of_terms):
+#
+#     for term in list_of_terms:
+#         term.pheromone = 1/len(list_of_terms)
+#
+#     return list_of_terms
 
-    terms_logK_entropy = []
-    for term in list_of_terms:
-        term.set_entropy(dataset)
-        terms_logK_entropy.append(term.logK_entropy)
 
-    for term in list_of_terms:
-        term.set_heuristic(len(dataset.class_values), sum(terms_logK_entropy))
-
-    return list_of_terms
+# def set_heuristic_values(list_of_terms, dataset):
+#
+#     terms_logK_entropy = []
+#     for term in list_of_terms:
+#         term.set_entropy(dataset)
+#         terms_logK_entropy.append(term.logK_entropy)
+#
+#     for term in list_of_terms:
+#         term.set_heuristic(len(dataset.class_values), sum(terms_logK_entropy))
+#
+#     return list_of_terms
 
 
 def set_probability_values(list_of_terms):

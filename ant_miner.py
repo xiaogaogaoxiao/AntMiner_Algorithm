@@ -1,4 +1,6 @@
 from functions import *
+from terms_list import TermsManager
+from rule import Rule
 
 
 def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_rules_converg, fold):
@@ -32,9 +34,10 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         list_of_current_rules = []
         list_of_current_rules_quality = []
 
-        list_of_terms = get_terms(training_dataset.attr_values)
-        list_of_terms = set_pheromone_init(list_of_terms)
-        list_of_terms = set_heuristic_values(list_of_terms, training_dataset)
+        terms = TermsManager(training_dataset, min_case_per_rule)
+        # list_of_terms = get_terms(training_dataset.attr_values)
+        # list_of_terms = set_pheromone_init(list_of_terms)
+        # list_of_terms = set_heuristic_values(list_of_terms, training_dataset)
 
         # DATASET STAGNATION >> REVIEW NECESSITY
         last_no_of_remaining_cases = no_of_remaining_cases
@@ -50,7 +53,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             break
 
         f = open(log_file, "a+")
-        f.write('\n> Number of terms: ' + repr(len(list_of_terms)))
+        f.write('\n> Number of terms: ' + repr(len(terms.size())))
         f.write('\n\n=> Internal Loop procedure: colony-loop_log-results.txt file <=\n')
         f.close()
 
@@ -84,7 +87,9 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Construction Function: rule-construction-fnc_log-results.txt file <=')
             f.close()
-            current_rule = rule_construction(list_of_terms, min_case_per_rule, training_dataset, idx_e, idx_i)
+            current_rule = Rule(training_dataset)
+            current_rule.construct(terms, min_case_per_rule, idx_e, idx_i)
+            # current_rule = rule_construction(list_of_terms, min_case_per_rule, training_dataset, idx_e, idx_i)
 
             # Case Rule-Constructed is NONE >> check necessity !!!
             if current_rule is None:
