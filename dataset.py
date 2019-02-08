@@ -11,9 +11,9 @@ class Dataset:
         self.col_index = {}
         self.data = None
 
-        self.set_data(data)
+        self.__constructor(data)
 
-    def set_data(self, data):
+    def __constructor(self, data):
 
         data.reset_index()
         col_names = list(data.columns.values)
@@ -33,24 +33,20 @@ class Dataset:
 
         return
 
-    def data_updating(self):
+    def data_updating(self, covered_cases):
 
-        attr = list(self.attr_values.keys())
+        # delete covered cases from data
+        covered_cases = np.array(covered_cases)
+        self.data = np.delete(self.data, covered_cases, axis=0)
 
-        self.attr_values = {}
-        self.attr_values = dict.fromkeys(attr)
-        for name in attr:
-            col_values = np.array(self.data[:, self.col_index[name]])
-            self.attr_values[name] = list(np.unique(col_values))
-
-        self.class_values = []
-        col_class_values = np.array(self.data[:, self.col_index[self.class_attr]])
-        self.class_values = list(np.unique(col_class_values))
+        # update dictionary of attribute-value
+        attrs = list(self.attr_values.keys())
+        self.attr_values = {}.fromkeys(attrs, [])
+        for attr in attrs:
+            col_values = np.array(self.data[:, self.col_index[attr]])
+            self.attr_values[attr] = list(np.unique(col_values))
 
         return
 
     def get_real_classes(self):
-
-        real_classes = list(self.data[:, self.col_index[self.class_attr]])
-
-        return real_classes
+        return list(self.data[:, self.col_index[self.class_attr]])

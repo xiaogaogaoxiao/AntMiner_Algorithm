@@ -229,148 +229,148 @@ from rule import Rule
 #     return new_rule
 
 
-def rule_pruning(rule, min_case_per_rule, dataset, idx_e, idx_i):
-    p_log_file = "log_rule-pruning-fnc.txt"
-
-    f = open(p_log_file, "a+")
-    f.write('\n\n\n================== RULE PRUNING LOOP =========================================================================')
-    f.write('\n> Stopping condition: pruned rule quality be less than best quality so far or if pruned rule antecedent has just one term')
-    f.write('\n> Receives constructed rule > drops each term on antecedent, sequentially from first to last > each term dropped consists on another rule > new pruned rule is the one of higher quality ')
-    f.write('\n> IF no new rules have higher quality than the new pruned rule, or if new pruned rule has oly one term in the antecedent > returns pruned rule')
-    f.write('\n==============================================================================================================')
-    f.write('\n EXTERNAL LOOP ITERATION ' + repr(idx_e))
-    f.write('\n INTERNAL LOOP ITERATION ' + repr(idx_i))
-    f.write('\n\n> RULE TO BE PRUNED :')
-    f.close()
-    rule.print_txt(p_log_file, 'Class')
-    f = open(p_log_file, "a+")
-    f.write('\n-Number of covered cases: ' + repr(rule.no_covered_cases))
-    f.write('\n-Quality: ' + repr(rule.quality))
-    f.close()
-
-    idx = 0
-    new_rule = Rule(dataset)
-    improvement = True
-    while improvement:
-        idx += 1
-
-        improvement = False
-
-        f = open(p_log_file, "a+")
-        f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx))
-        f.close()
-
-        if len(rule.antecedent) <= 1:
-            f = open(p_log_file, "a+")
-            f.write('\n\n==> BREAK LOOP:')
-            f.write('\n> Condition: pruned rule antecedent = 1')
-            # f.write('\n  - Number of iterations: ' + repr(idx))
-            f.close()
-            break
-
-        f = open(p_log_file, "a+")
-        f.write('\n\n==> CURRENT RULE :')
-        f.close()
-        rule.print_txt(p_log_file, 'Class')
-        f = open(p_log_file, "a+")
-        f.write('\n\n==> TERMS DROPPING PROCEDURE:')
-        f.close()
-
-        antecedent = rule.antecedent.copy()
-        best_quality = rule.quality
-
-        for term_idx, attr_drop in enumerate(antecedent):
-
-            f = open(p_log_file, "a+")
-            f.write('\n\n>>> TERM ' + repr(term_idx))
-            f.write('\n\n> Term_2b_dropped: Attribute=' + repr(attr_drop) + ' Value=' + repr(rule.antecedent[attr_drop]))
-            f.close()
-
-            # creates another rule deleting a term from its antecedent
-            pruned_rule = Rule(dataset)
-            pruned_rule.gen_pruned_rule(rule, attr_drop, term_idx, dataset, min_case_per_rule, idx_e, idx_i)
-
-            f = open(p_log_file, "a+")
-            f.write('\n\n> Pruned Rule:')
-            f.close()
-            pruned_rule.print_txt(p_log_file, 'Class')
-            f = open(p_log_file, "a+")
-            f.write('\n-Number of covered cases: ' + repr(pruned_rule.no_covered_cases))
-            f.write('\n-Quality: ' + repr(pruned_rule.quality))
-            f.close()
-
-            if pruned_rule.no_covered_cases < min_case_per_rule:  # POSSIBLE TO HAPPEN?
-                f = open(p_log_file, "a+")
-                f.write('\n!!!! WARNING: pruned rule covers less cases!')
-                f.close()
-
-            if pruned_rule.quality > best_quality:
-                new_rule = copy.deepcopy(pruned_rule)
-                best_quality = pruned_rule.quality
-                improvement = True
-                f = open(p_log_file, "a+")
-                f.write('\n\n!!! Improvement True')
-                f.write('\n!!! Best rule so far')
-                f.close()
-        # end of for attrs in antecedent
-
-        if improvement:
-            rule = copy.deepcopy(new_rule)
-    # end of while improvement
-
-    f = open(p_log_file, "a+")
-    f.write('\n\n================== END PRUNING FUNCTION LOOP')
-    f.write('\n> Condition: best quality of new pruned rules < current rule quality')
-    f.write('\n  - Improvement: ' + repr(improvement))
-    f.write('\n  - Number of iterations: ' + repr(idx))
-    f.write('\n\n> Final Pruned Rule:')
-    f.close()
-    rule.print_txt(p_log_file, 'Class')
-
-    return rule
-
-
-def pheromone_updating(list_of_terms, pruned_rule):
-
-    # Getting used terms
-    used_terms_idx = []
-    for term in pruned_rule.added_terms:
-        used_terms_idx.append(term.term_idx)
-
-    # Increasing used terms pheromone
-    denominator = 0
-    for term in list_of_terms:
-        if term.term_idx in used_terms_idx:
-            term.pheromone += term.pheromone * pruned_rule.quality
-        denominator += term.pheromone
-
-    # Decreasing not used terms: normalization
-    for term in list_of_terms:
-        term.pheromone = term.pheromone / denominator
-
-    return list_of_terms
+# def rule_pruning(rule, min_case_per_rule, dataset, idx_e, idx_i):
+#     p_log_file = "log_rule-pruning-fnc.txt"
+#
+#     f = open(p_log_file, "a+")
+#     f.write('\n\n\n================== RULE PRUNING LOOP =========================================================================')
+#     f.write('\n> Stopping condition: pruned rule quality be less than best quality so far or if pruned rule antecedent has just one term')
+#     f.write('\n> Receives constructed rule > drops each term on antecedent, sequentially from first to last > each term dropped consists on another rule > new pruned rule is the one of higher quality ')
+#     f.write('\n> IF no new rules have higher quality than the new pruned rule, or if new pruned rule has oly one term in the antecedent > returns pruned rule')
+#     f.write('\n==============================================================================================================')
+#     f.write('\n EXTERNAL LOOP ITERATION ' + repr(idx_e))
+#     f.write('\n INTERNAL LOOP ITERATION ' + repr(idx_i))
+#     f.write('\n\n> RULE TO BE PRUNED :')
+#     f.close()
+#     rule.print_txt(p_log_file, 'Class')
+#     f = open(p_log_file, "a+")
+#     f.write('\n-Number of covered cases: ' + repr(rule.no_covered_cases))
+#     f.write('\n-Quality: ' + repr(rule.quality))
+#     f.close()
+#
+#     idx = 0
+#     new_rule = Rule(dataset)
+#     improvement = True
+#     while improvement:
+#         idx += 1
+#
+#         improvement = False
+#
+#         f = open(p_log_file, "a+")
+#         f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx))
+#         f.close()
+#
+#         if len(rule.antecedent) <= 1:
+#             f = open(p_log_file, "a+")
+#             f.write('\n\n==> BREAK LOOP:')
+#             f.write('\n> Condition: pruned rule antecedent = 1')
+#             # f.write('\n  - Number of iterations: ' + repr(idx))
+#             f.close()
+#             break
+#
+#         f = open(p_log_file, "a+")
+#         f.write('\n\n==> CURRENT RULE :')
+#         f.close()
+#         rule.print_txt(p_log_file, 'Class')
+#         f = open(p_log_file, "a+")
+#         f.write('\n\n==> TERMS DROPPING PROCEDURE:')
+#         f.close()
+#
+#         antecedent = rule.antecedent.copy()
+#         best_quality = rule.quality
+#
+#         for term_idx, attr_drop in enumerate(antecedent):
+#
+#             f = open(p_log_file, "a+")
+#             f.write('\n\n>>> TERM ' + repr(term_idx))
+#             f.write('\n\n> Term_2b_dropped: Attribute=' + repr(attr_drop) + ' Value=' + repr(rule.antecedent[attr_drop]))
+#             f.close()
+#
+#             # creates another rule deleting a term from its antecedent
+#             pruned_rule = Rule(dataset)
+#             pruned_rule.gen_pruned_rule(rule, attr_drop, term_idx, dataset, min_case_per_rule, idx_e, idx_i)
+#
+#             f = open(p_log_file, "a+")
+#             f.write('\n\n> Pruned Rule:')
+#             f.close()
+#             pruned_rule.print_txt(p_log_file, 'Class')
+#             f = open(p_log_file, "a+")
+#             f.write('\n-Number of covered cases: ' + repr(pruned_rule.no_covered_cases))
+#             f.write('\n-Quality: ' + repr(pruned_rule.quality))
+#             f.close()
+#
+#             if pruned_rule.no_covered_cases < min_case_per_rule:  # POSSIBLE TO HAPPEN?
+#                 f = open(p_log_file, "a+")
+#                 f.write('\n!!!! WARNING: pruned rule covers less cases!')
+#                 f.close()
+#
+#             if pruned_rule.quality > best_quality:
+#                 new_rule = copy.deepcopy(pruned_rule)
+#                 best_quality = pruned_rule.quality
+#                 improvement = True
+#                 f = open(p_log_file, "a+")
+#                 f.write('\n\n!!! Improvement True')
+#                 f.write('\n!!! Best rule so far')
+#                 f.close()
+#         # end of for attrs in antecedent
+#
+#         if improvement:
+#             rule = copy.deepcopy(new_rule)
+#     # end of while improvement
+#
+#     f = open(p_log_file, "a+")
+#     f.write('\n\n================== END PRUNING FUNCTION LOOP')
+#     f.write('\n> Condition: best quality of new pruned rules < current rule quality')
+#     f.write('\n  - Improvement: ' + repr(improvement))
+#     f.write('\n  - Number of iterations: ' + repr(idx))
+#     f.write('\n\n> Final Pruned Rule:')
+#     f.close()
+#     rule.print_txt(p_log_file, 'Class')
+#
+#     return rule
 
 
-def get_remaining_cases_rule(dataset):
+# def pheromone_updating(list_of_terms, pruned_rule):
+#
+#     # Getting used terms
+#     used_terms_idx = []
+#     for term in pruned_rule.added_terms:
+#         used_terms_idx.append(term.term_idx)
+#
+#     # Increasing used terms pheromone
+#     denominator = 0
+#     for term in list_of_terms:
+#         if term.term_idx in used_terms_idx:
+#             term.pheromone += term.pheromone * pruned_rule.quality
+#         denominator += term.pheromone
+#
+#     # Decreasing not used terms: normalization
+#     for term in list_of_terms:
+#         term.pheromone = term.pheromone / denominator
+#
+#     return list_of_terms
 
-    classes = dataset.data[:, dataset.col_index[dataset.class_attr]]
-    class_freq = dict(collections.Counter(classes))
 
-    max_freq = 0
-    class_chosen = None
-    for w in class_freq:                        # other way: class_chosen <= max(class_freq[])
-        if class_freq[w] > max_freq:
-            class_chosen = w
-            max_freq = class_freq[w]
+# def get_remaining_cases_rule(dataset):
+#
+#     classes = dataset.data[:, dataset.col_index[dataset.class_attr]]
+#     class_freq = dict(collections.Counter(classes))
+#
+#     max_freq = 0
+#     class_chosen = None
+#     for w in class_freq:                        # other way: class_chosen <= max(class_freq[])
+#         if class_freq[w] > max_freq:
+#             class_chosen = w
+#             max_freq = class_freq[w]
+#
+#     rule = Rule(dataset)
+#     rule.covered_cases = []
+#     rule.consequent = class_chosen
+#
+#     return rule
 
-    rule = Rule(dataset)
-    rule.covered_cases = []
-    rule.consequent = class_chosen
 
-    return rule
-
-
-def classification_task(dataset, list_of_rules):
+def classification_task(dataset, list_of_rules):  # !!!! Put inside class AntMiner
 
     predicted_classes = []
     chosen_class = None

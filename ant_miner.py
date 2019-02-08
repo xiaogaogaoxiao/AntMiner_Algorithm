@@ -1,4 +1,4 @@
-from functions import *
+import copy
 from terms_manager import TermsManager
 from rule import Rule
 
@@ -28,11 +28,13 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
         f.close()
 
         previous_rule = Rule(training_dataset)
+        best_rule = copy.deepcopy(previous_rule)
+
         ant_index = 0
         converg_test_index = 1
 
-        list_of_current_rules = []
-        list_of_current_rules_quality = []
+        # list_of_current_rules = []
+        # list_of_current_rules_quality = []
 
         terms_mgr = TermsManager(training_dataset, min_case_per_rule)
         # list_of_terms = get_terms(training_dataset.attr_values)
@@ -87,16 +89,10 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             f = open(i_log_file, "a+")
             f.write('\n\n=> Rule Construction Function: rule-construction-fnc_log-results.txt file <=')
             f.close()
+
             current_rule = Rule(training_dataset)
             current_rule.construct(terms_mgr, min_case_per_rule, idx_e, idx_i)
             # current_rule = rule_construction(list_of_terms, min_case_per_rule, training_dataset, idx_e, idx_i)
-
-            # RULE PRUNING
-            f = open(i_log_file, "a+")
-            f.write('\n\n=> Rule Pruning Function: rule-pruning-fnc_log-results.txt file <=')
-            f.close()
-            current_rule.prune(idx_e, idx_i)
-            # current_rule_pruned = rule_pruning(current_rule, min_case_per_rule, training_dataset, idx_e, idx_i)
 
             f = open(i_log_file, "a+")
             f.write('\n\n> Rule Constructed:')
@@ -104,69 +100,90 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             current_rule.print_txt(i_log_file, 'Class')
             f = open(i_log_file, "a+")
             f.write('\n-Quality: ' + repr(current_rule.quality))
+            f.close()
+
+            # RULE PRUNING
+            f = open(i_log_file, "a+")
+            f.write('\n\n=> Rule Pruning Function: rule-pruning-fnc_log-results.txt file <=')
+            f.close()
+
+            current_rule.prune(terms_mgr, idx_e, idx_i)
+            # current_rule_pruned = rule_pruning(current_rule, min_case_per_rule, training_dataset, idx_e, idx_i)
+
+            f = open(i_log_file, "a+")
             f.write('\n\n> Rule Pruned:')
             f.close()
-            current_rule_pruned.print_txt(i_log_file, 'Class')
+            current_rule.print_txt(i_log_file, 'Class')
             f = open(i_log_file, "a+")
-            f.write('\n-Quality: ' + repr(current_rule_pruned.quality))
+            f.write('\n-Quality: ' + repr(current_rule.quality))
             f.close()
 
             # just for log register
-            if len(list_of_current_rules) >= 1:
-                last_list_rule = list_of_current_rules[-1]
-                f = open(i_log_file, "a+")
-                f.write('\n\n> Last constructed-pruned rule from current_rule_list:')
-                f.close()
-                last_list_rule.print_txt(i_log_file, 'Class')
-                f = open(i_log_file, "a+")
-                f.write('\n-Quality: ' + repr(last_list_rule.quality))
-                f.close()
+            # if len(list_of_current_rules) >= 1:
+            #     last_list_rule = list_of_current_rules[-1]
+            #     f = open(i_log_file, "a+")
+            #     f.write('\n\n> Last constructed-pruned rule from current_rule_list:')
+            #     f.close()
+            #     last_list_rule.print_txt(i_log_file, 'Class')
+            #     f = open(i_log_file, "a+")
+            #     f.write('\n-Quality: ' + repr(last_list_rule.quality))
+            #     f.close()
 
             # converg_test_index = check_convergence(current_rule_pruned, list_of_current_rules, converg_test_index)
-            if current_rule_pruned.equals(previous_rule):
+            if current_rule.equals(previous_rule):
                 converg_test_index += 1
-            else:
-                list_of_current_rules.append(current_rule_pruned)
-                list_of_current_rules_quality.append(current_rule_pruned.quality)
-                converg_test_index = 1
-                previous_rule = copy.deepcopy(current_rule_pruned)
                 f = open(i_log_file, "a+")
-                f.write('\n\n!!! Pruned Constructed Rule did not converged')
-                f.write('\n!!! Pruned Rule added to current_rule_list')
+                f.write('\n\n!!! Constructed Rule converged')
                 f.close()
+            else:
+                converg_test_index = 1
+                if current_rule.quality > best_rule.quality:
+                    best_rule = copy.deepcopy(current_rule)
+                    f = open(i_log_file, "a+")
+                    f.write('\n\n!!! Pruned Constructed Rule did not converged')
+                    f.write('\n!!! Pruned Rule added to current_rule_list')
+                    f.close()
 
-            terms_mgr.pheromone_updating()
-            list_of_terms = pheromone_updating(list_of_terms, current_rule_pruned)
+                # list_of_current_rules.append(current_rule_pruned)
+                # list_of_current_rules_quality.append(current_rule_pruned.quality)
+                # converg_test_index = 1
+                # previous_rule = copy.deepcopy(current_rule_pruned)
+                # f = open(i_log_file, "a+")
+                # f.write('\n\n!!! Pruned Constructed Rule did not converged')
+                # f.write('\n!!! Pruned Rule added to current_rule_list')
+                # f.close()
+
+            terms_mgr.pheromone_updating(current_rule.antecedent, current_rule.quality)
+            previous_rule = copy.deepcopy(current_rule)
             ant_index += 1
+
+            # list_of_terms = pheromone_updating(list_of_terms, current_rule_pruned)
         # END OF COLONY LOOP
 
         # !!! CHECK NECESSITY
-        if not list_of_current_rules_quality:
-            f = open(i_log_file, "a+")
-            f.write('\n\n!!! WARNING: Internal Loop added no rule quality to list_of_current_rules_quality > continue')
-            f.close()
-            continue  # GOES BACK TO LOOP WHILE UNCOVERED CASES
+        # if not list_of_current_rules_quality:
+        #     f = open(i_log_file, "a+")
+        #     f.write('\n\n!!! WARNING: Internal Loop added no rule quality to list_of_current_rules_quality > continue')
+        #     f.close()
+        #     continue  # GOES BACK TO LOOP WHILE UNCOVERED CASES
 
-        best_rule_idx = list_of_current_rules_quality.index(max(list_of_current_rules_quality))
-        best_rule = copy.deepcopy(list_of_current_rules[best_rule_idx])
+        # best_rule_idx = list_of_current_rules_quality.index(max(list_of_current_rules_quality))
+        # best_rule = copy.deepcopy(list_of_current_rules[best_rule_idx])
         discovered_rule_list.append(best_rule)
 
-        covered_cases = np.array(best_rule.covered_cases)
-        training_dataset.data = np.delete(training_dataset.data, covered_cases, axis=0)
-        training_dataset.data_updating()
+        # covered_cases = np.array(best_rule.covered_cases)
+        # training_dataset.data = np.delete(training_dataset.data, covered_cases, axis=0)
+        training_dataset.data_updating(best_rule.covered_cases)
         no_of_remaining_cases = len(training_dataset.data)
 
         # just for log register
         f = open(log_file, "a+")
         f.write('\n>> Internal Loop Results:')
-        f.write('\n>Number of generated rules on internal loop: ' + repr(len(list_of_current_rules)))
-        f.write('\n>Generated rules-quality list: ' + repr(list_of_current_rules_quality))
-        f.write('\n>Best rule index: ' + repr(best_rule_idx))
         f.write('\n>Best rule:')
         f.close()
         best_rule.print_txt(log_file, 'Class')
         f = open(log_file, "a+")
-        f.write('\n- number of covered cases: ' + repr(len(covered_cases)))
+        f.write('\n- number of covered cases: ' + repr(len(best_rule.covered_cases)))
         f.write('\n\n>> External Loop Information:')
         f.write('\n>Number of rules on discovered_rule_list: ' + repr(len(discovered_rule_list)))
         f.write('\n>Last_no_of_remaining_cases: ' + repr(last_no_of_remaining_cases))
@@ -183,8 +200,10 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
     f.close()
 
     # generating rule for remaining cases
-    rule_for_remaining_cases = get_remaining_cases_rule(training_dataset)
-    discovered_rule_list.append(rule_for_remaining_cases)
+    rule = Rule(training_dataset)
+    rule.general_rule()
+    # rule_for_remaining_cases = get_remaining_cases_rule(training_dataset)
+    discovered_rule_list.append(rule)
 
     return discovered_rule_list, training_dataset, no_of_remaining_cases
 

@@ -65,6 +65,22 @@ class TermsManager:
 
         return accum
 
+    def __get_pheromone_accum(self):
+
+        accum = 0
+        for attr in self.__pheromone_table:
+            for value in self.__pheromone_table[attr]:
+                accum += self.__pheromone_table[attr][value]
+
+        return accum
+
+    def __reset_terms_availability(self):
+
+        attrs = list(self.__terms_availability.keys())
+        self.__terms_availability = {}.fromkeys(attrs, True)
+
+        return
+
     def size(self):
         return self.__no_of_terms
 
@@ -123,9 +139,33 @@ class TermsManager:
         self.__terms_availability[attr] = False
         return
 
-    def pheromone_updating(self):
+    def get_cases(self, antecedent):
 
-        # update self.__probability_table
-        # reset self.__terms_availability
+        all_cases = []
+        for attr in antecedent:
+            for term in self.__terms_dict:
+                if antecedent[attr] == term.value:
+                    all_cases.append(term.covered_cases)
+
+        cases = all_cases.pop()
+        for case_set in all_cases:
+            cases = list(set(cases) & set(case_set))
+
+        return cases
+
+    def pheromone_updating(self, antecedent, quality):
+
+        # increasing pheromone of used terms
+        for attr in antecedent:
+            value = antecedent[attr]
+            self.__pheromone_table[attr][value] += self.__pheromone_table[attr][value] * quality
+
+        # Decreasing not used terms: normalization
+        pheromone_normalization = self.__get_pheromone_accum()
+        for attr in self.__pheromone_table:
+            for value in self.__pheromone_table[attr]:
+                self.__pheromone_table[attr][value] += self.__pheromone_table[attr][value] / pheromone_normalization
+
+        self.__reset_terms_availability()
 
         return
