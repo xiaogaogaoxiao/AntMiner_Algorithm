@@ -1,6 +1,8 @@
 import copy
+import numpy as np
 from terms_manager import TermsManager
 from rule import Rule
+from functions import *
 
 
 def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_rules_converg, fold):
@@ -23,9 +25,12 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
     idx_e = 0
     while no_of_remaining_cases > max_uncovered_cases:
         idx_e += 1
+        array_log_file = "log_dataset_external-Loop_fold-" + str(fold) + "iteration-" + str(idx_e) + ".txt"
         f = open(log_file, "a+")
         f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx_e))
+        f.write('\n> current dataset in ' + repr(array_log_file) + 'file')
         f.close()
+        np.savetxt(array_log_file, training_dataset.data, fmt='%5s')
 
         previous_rule = Rule(training_dataset)
         best_rule = copy.deepcopy(previous_rule)
@@ -55,7 +60,7 @@ def ant_miner(dataset, no_of_ants, min_case_per_rule, max_uncovered_cases, no_ru
             break
 
         f = open(log_file, "a+")
-        f.write('\n> Number of terms: ' + repr(len(terms_mgr.size())))
+        f.write('\n> Number of terms: ' + repr(terms_mgr.size()))
         f.write('\n\n=> Internal Loop procedure: colony-loop_log-results.txt file <=\n')
         f.close()
 

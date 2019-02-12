@@ -114,7 +114,7 @@ class Rule:
             f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx))
             f.close()
             f = open(c_log_file, "a+")
-            f.write('\n> List_of_terms size: ' + repr(len(terms_mgr.size())))
+            f.write('\n> List_of_terms size: ' + repr(terms_mgr.size()))
             f.write('\n\n==> CURRENT RULE:')
             f.close()
             self.print_txt(c_log_file, 'Class')
@@ -123,7 +123,7 @@ class Rule:
                 f = open(c_log_file, "a+")
                 f.write('\n\n=============== END CONSTRUCTION')
                 f.write('\n> Condition: empty terms list')
-                f.write('\n   - current_list_of_terms size = ' + repr(len(terms_mgr.size())))
+                f.write('\n   - current_list_of_terms size = ' + repr(terms_mgr.size()))
                 f.write('\n   - iteration number = ' + repr(idx))
                 f.close()
                 break
@@ -153,7 +153,7 @@ class Rule:
                 f = open(c_log_file, "a+")
                 f.write('\n\n=============== END CONSTRUCTION')
                 f.write('\n> Condition: new rule doesnt cover minimum cases')
-                f.write('\n   - current_list_of_terms size = ' + repr(len(terms_mgr.size())))
+                f.write('\n   - current_list_of_terms size = ' + repr(terms_mgr.size()))
                 f.write('\n   - iteration number = ' + repr(idx))
                 f.close()
                 break
@@ -216,7 +216,7 @@ class Rule:
             f.close()
 
             # current rule attributes
-            current_antecedent = self.antecedent
+            current_antecedent = self.antecedent.copy()
             current_consequent = self.consequent
             current_cases = self.covered_cases
             current_quality = self.quality
@@ -253,7 +253,7 @@ class Rule:
                     f.close()
 
                 # restore current rule attributes
-                self.antecedent = current_antecedent
+                self.antecedent = current_antecedent.copy()
                 self.consequent = current_consequent
                 self.covered_cases = current_cases
                 self.quality = current_quality
@@ -283,8 +283,8 @@ class Rule:
 
     def equals(self, prev_rule):
 
-        attr_this = self.antecedent.keys()
-        attr_prev = prev_rule.antecedent.keys()
+        attr_this = list(self.antecedent.keys())
+        attr_prev = list(prev_rule.antecedent.keys())
 
         if self.consequent == prev_rule.consequent:
             if len(set(attr_this) ^ set(attr_prev)) == 0:   # both have same keys
@@ -317,7 +317,7 @@ class Rule:
         self.consequent = class_chosen
 
         return
-    
+
     def print(self, class_attr):
 
         print("IF { ", end="")
