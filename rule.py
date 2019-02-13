@@ -128,22 +128,24 @@ class Rule:
                 f.close()
                 break
 
-            attribute, value, cases = terms_mgr.sort_term()
-            covered_cases = list(set(cases) & set(self.covered_cases))
+            term = terms_mgr.sort_term()
+            if term is None:
+                print("Error: sorted term is None")
+            covered_cases = list(set(term.covered_cases) & set(self.covered_cases))
 
             f = open(c_log_file, "a+")
-            f.write('\n\n==> TERM TO BE ADDED: Attribute='+repr(attribute)+' Value='+repr(value))
+            f.write('\n\n==> TERM TO BE ADDED: Attribute='+repr(term.attribute)+' Value='+repr(term.value))
             f.write('\n- Current rule covered cases: ' + repr(self.covered_cases))
-            f.write('\n- Sorted term covered cases: ' + repr(cases))
+            f.write('\n- Sorted term covered cases: ' + repr(term.covered_cases))
             f.write('\n- Intersection covered cases: ' + repr(covered_cases))
             f.write('\n- Number of intersection covered cases: ' + repr(len(covered_cases)))
             f.close()
 
             if len(covered_cases) >= min_case_per_rule:
-                self.antecedent[attribute] = value
+                self.antecedent[term.attribute] = term.value
                 self.covered_cases = covered_cases
                 self.no_covered_cases = len(self.covered_cases)
-                terms_mgr.update_availability(attribute)
+                terms_mgr.update_availability(term.attribute)
 
                 f = open(c_log_file, "a+")
                 f.write('\n\n==> NEW CONSTRUCTED RULE:')
@@ -196,6 +198,7 @@ class Rule:
 
         idx = 0
         while True:
+            idx += 1
             f = open(p_log_file, "a+")
             f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx))
             f.close()
@@ -221,6 +224,7 @@ class Rule:
             current_cases = self.covered_cases
             current_quality = self.quality
 
+            # Iteratively removes one attribute from current antecedent
             best_attr = None
             best_quality = current_quality
             for attr in current_antecedent:
@@ -249,7 +253,7 @@ class Rule:
                     best_attr = attr
                     best_quality = self.quality
                     f = open(p_log_file, "a+")
-                    f.write('\n\n!!! Improvement: Best rule so far')
+                    f.write('\n\n!!! Improvement: Best attribute to be removed so far')
                     f.close()
 
                 # restore current rule attributes
