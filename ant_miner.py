@@ -26,10 +26,7 @@ class AntMiner:
         f.write('\n FOLD OF CROSS VALIDATION: ' + repr(self.fold))
         f.close()
 
-        training_dataset = copy.deepcopy(self.dataset)
-
-        dataset_stagnation_test = 0
-        no_of_remaining_cases = len(training_dataset.data)
+        no_of_remaining_cases = len(self.dataset.data)
 
         idx_e = 0
         while no_of_remaining_cases > self.max_uncovered_cases:
@@ -39,38 +36,24 @@ class AntMiner:
             f.write('\n\n>>>>>>>>>>>>>>> ITERATION ' + repr(idx_e))
             f.write('\n> current dataset in ' + repr(array_log_file) + 'file')
             f.close()
-            np.savetxt(array_log_file, training_dataset.data, fmt='%5s')
+            np.savetxt(array_log_file, self.dataset.data, fmt='%5s')
 
-            previous_rule = Rule(training_dataset)
+            previous_rule = Rule(self.dataset)
             best_rule = copy.deepcopy(previous_rule)
 
             ant_index = 0
             converg_test_index = 1
 
-            terms_mgr = TermsManager(training_dataset, self.min_case_per_rule)
+            terms_mgr = TermsManager(self.dataset, self.min_case_per_rule)
             if not terms_mgr.available():
                 array_log_file = "log_NO-TERMS_fold" + str(self.fold) + "_iteration-" + str(idx_e) + ".txt"
                 f = open(log_file, "a+")
                 f.write('\n\n==================== END EXTERNAL LOOP')
                 f.write('\n!! Alternative Condition: there are no terms in current dataset that covers enough cases')
                 f.write('\n   - no_of_remaining_cases = ' + repr(no_of_remaining_cases))
-                f.write('\n   - dataset_stagnation_test = ' + repr(dataset_stagnation_test))
                 f.write('\n\n=>> dataset in ' + repr(array_log_file) + 'file')
                 f.close()
-                np.savetxt(array_log_file, training_dataset.data, fmt='%5s')
-                break
-
-            # DATASET STAGNATION >> REVIEW NECESSITY
-            last_no_of_remaining_cases = no_of_remaining_cases
-            if no_of_remaining_cases == last_no_of_remaining_cases:
-                dataset_stagnation_test += 1
-            if dataset_stagnation_test == self.no_rules_converg:
-                f = open(log_file, "a+")
-                f.write('\n\n==================== END EXTERNAL LOOP')
-                f.write('\n!! Alternative Condition: dataset stagnation')
-                f.write('\n   - no_of_remaining_cases = ' + repr(no_of_remaining_cases))
-                f.write('\n   - dataset_stagnation_test = ' + repr(dataset_stagnation_test))
-                f.close()
+                np.savetxt(array_log_file, self.dataset.data, fmt='%5s')
                 break
 
             f = open(log_file, "a+")
@@ -109,7 +92,7 @@ class AntMiner:
                 f.write('\n\n=> Rule Construction Function: rule-construction-fnc_log-results.txt file <=')
                 f.close()
 
-                current_rule = Rule(training_dataset)
+                current_rule = Rule(self.dataset)
                 current_rule.construct(terms_mgr, self.min_case_per_rule, idx_e, idx_i)
 
                 f = open(i_log_file, "a+")
@@ -161,8 +144,8 @@ class AntMiner:
                 ant_index += 1
 
             self.discovered_rule_list.append(best_rule)
-            training_dataset.data_updating(best_rule.covered_cases)
-            no_of_remaining_cases = len(training_dataset.data)
+            self.dataset.data_updating(best_rule.covered_cases)
+            no_of_remaining_cases = len(self.dataset.data)
 
             # just for log register
             f = open(log_file, "a+")
@@ -174,7 +157,6 @@ class AntMiner:
             f.write('\n- number of covered cases: ' + repr(len(best_rule.covered_cases)))
             f.write('\n\n>> External Loop Information:')
             f.write('\n>Number of rules on discovered_rule_list: ' + repr(len(self.discovered_rule_list)))
-            f.write('\n>Last_no_of_remaining_cases: ' + repr(last_no_of_remaining_cases))
             f.write('\n>No_of_remaining_cases: ' + repr(no_of_remaining_cases))
             f.close()
         # END OF WHILE (AVAILABLE_CASES > MAX_UNCOVERED_CASES)
@@ -188,7 +170,7 @@ class AntMiner:
         f.close()
 
         # generating rule for remaining cases
-        rule = Rule(training_dataset)
+        rule = Rule(self.dataset)
         rule.general_rule()
 
         # just for log register
