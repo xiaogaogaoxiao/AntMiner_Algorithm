@@ -17,6 +17,7 @@ def main():
 
     # INPUT: DATASET AND CLASS ATTRIBUTE NAME
     log_file = "log_main.txt"
+    ac_log_file = "log_accuracy-measure.txt"
     header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
     data = pd.read_csv('datasets/new_tic-tac-toe_data_equalized.txt', delimiter=',', header=None, names=header, index_col=False)
     class_attr = 'Class'
@@ -55,33 +56,43 @@ def main():
         training_dataset = Dataset(training_data, class_attr)
         test_dataset = Dataset(test_data, class_attr)
 
+        # Just for log registes
+        f = open(ac_log_file, "a+")
+        f.write('\n\n\n=============== PREDICTION ACCURACY ANALISYS =================================================================')
+        f.write('\n\n=> FOLD: ' + repr(fold))
+        f.close()
+
         # ANT-MINER ALGORITHM: list of rules generator
         f = open(log_file, "a+")
         f.write('\n\n>>>>>>>>>>>>>>>>>>>> ANT-MINER ALGORITHM\n')
         f.close()
-        discovered_rule_list, final_training_set, no_of_remaining_cases = \
-            ant_miner(training_dataset, no_of_ants, min_cases_per_rule, max_uncovered_cases, no_rules_converg, fold)
+        ant_miner = AntMiner(training_dataset, no_of_ants, min_cases_per_rule, max_uncovered_cases, no_rules_converg, fold)
+        ant_miner.fit()
 
         print('\nRULES:\n')
         f = open(log_file, "a+")
         f.write('\n\n>>>>>>>>>>>>>>>>>>>> DISCOVERED MODEL (Ant-Miner Algorithm Results)')
-        f.write('\n\n>> Number of remaining uncovered cases: ' + repr(no_of_remaining_cases))
         f.write('\n>> Discovered rule list:')
         f.close()
-        for rule in discovered_rule_list:
+        for rule in ant_miner.discovered_rule_list:
             rule.print(class_attr)
             rule.print_txt(log_file, class_attr)
-        no_of_discovered_rules.append(len(discovered_rule_list))
+        no_of_discovered_rules.append(len(ant_miner.discovered_rule_list))
 
         # CLASSIFICATION OF NEW CASES
         test_dataset_real_classes = test_dataset.get_real_classes()
-        test_dataset_predicted_classes = classification_task(test_dataset, discovered_rule_list)
+        test_dataset_predicted_classes = ant_miner.predict(test_dataset)
+        f = open(ac_log_file, "a+")
+        f.write('\n\n=> TARGETS:')
+        f.write('\n- Real classes:      ' + repr(test_dataset_real_classes))
+        f.write('\n- Predicted classes: ' + repr(test_dataset_predicted_classes))
+        f.close()
 
         # PREDICTIVE ACCURACY CALCULATION
         accuracy = accuracy_score(test_dataset_real_classes, test_dataset_predicted_classes)
         predictive_accuracy.append(accuracy)
         f = open(log_file, "a+")
-        f.write('\n\n>> Number of discovered rules: ' + repr(len(discovered_rule_list)))
+        f.write('\n\n>> Number of discovered rules: ' + repr(len(ant_miner.discovered_rule_list)))
         f.write('\n>> Predictive Accuracy: ' + repr(accuracy))
         f.close()
 

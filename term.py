@@ -33,13 +33,14 @@ class Term:
                 if prob_posteriori != 0:
                     entropy -= prob_posteriori * math.log2(prob_posteriori)
             self.__entropy = entropy
-        else:
-            print('term.__constructor: Term value doesnt appear in current dataset')
-            self.__available = False
 
         # COVERED CASES
         self.covered_cases = rows
+
+        # AVAILABILITY
         if term_freq < min_case_per_rule:
+            self.__available = False
+        elif self.get_heuristic() == 0:
             self.__available = False
 
         return

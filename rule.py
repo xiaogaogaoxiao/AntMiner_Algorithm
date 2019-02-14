@@ -126,7 +126,6 @@ class Rule:
                 f.write('\n   - current_list_of_terms size = ' + repr(terms_mgr.size()))
                 f.write('\n   - iteration number = ' + repr(idx))
                 f.close()
-                break
 
             term = terms_mgr.sort_term()
             if term is None:
@@ -162,6 +161,8 @@ class Rule:
 
         # CONSEQUENT SELECTION
         self.__set_consequent()
+        if self.consequent is None:
+            print("!! Error: Rule created with no consequent")
 
         # SET QUALITY
         self.__set_quality(idx_e, idx_i, p=False)
@@ -319,6 +320,9 @@ class Rule:
         self.no_covered_cases = None
         self.quality = None
         self.consequent = class_chosen
+
+        if self.consequent is None:
+            print("!! Error: Rule created with no consequent")
 
         return
 
