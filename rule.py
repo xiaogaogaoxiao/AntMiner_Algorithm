@@ -126,6 +126,7 @@ class Rule:
                 f.write('\n   - current_list_of_terms size = ' + repr(terms_mgr.size()))
                 f.write('\n   - iteration number = ' + repr(idx))
                 f.close()
+                break
 
             term = terms_mgr.sort_term()
             if term is None:
@@ -307,6 +308,7 @@ class Rule:
 
         class_col = self.__dataset.col_index[self.__dataset.class_attr]
         classes = self.__dataset.data[:, class_col]
+
         class_freq = dict(collections.Counter(classes))
 
         max_freq = 0

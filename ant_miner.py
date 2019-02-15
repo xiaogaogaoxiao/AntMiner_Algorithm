@@ -169,10 +169,6 @@ class AntMiner:
         f.write('\n   - max_uncovered_cases = ' + repr(self.max_uncovered_cases))
         f.close()
 
-        # generating rule for remaining cases
-        rule = Rule(self.dataset)
-        rule.general_rule()
-
         # just for log register
         ac_log_file = "log_accuracy-measure.txt"
         f = open(ac_log_file, "a+")
@@ -180,18 +176,29 @@ class AntMiner:
         f.close()
         for r in self.discovered_rule_list:
             r.print_txt(ac_log_file, 'Class')
-        f = open(ac_log_file, "a+")
-        f.write('\n\n=> GENERAL RULE: from remaining uncovered cases')
-        f.close()
-        rule.print_txt(ac_log_file, 'Class')
 
-        self.discovered_rule_list.append(rule)
+        # generating rule for remaining cases
+        if no_of_remaining_cases > 0:
+            rule = Rule(self.dataset)
+            rule.general_rule()
 
-        f = open(ac_log_file, "a+")
-        f.write('\n\n=> FINAL LIST OF DISCOVERED RULES:')
-        f.close()
-        for r in self.discovered_rule_list:
-            r.print_txt(ac_log_file, 'Class')
+            f = open(ac_log_file, "a+")
+            f.write('\n\n=> GENERAL RULE: from remaining uncovered cases')
+            f.close()
+            rule.print_txt(ac_log_file, 'Class')
+
+            self.discovered_rule_list.append(rule)
+
+            f = open(ac_log_file, "a+")
+            f.write('\n\n=> FINAL LIST OF DISCOVERED RULES:')
+            f.close()
+            for r in self.discovered_rule_list:
+                r.print_txt(ac_log_file, 'Class')
+
+        else:
+            f = open(ac_log_file, "a+")
+            f.write('\n\n!!! No general rule created: there are no remaining uncovered cases')
+            f.close()
 
         return
 
