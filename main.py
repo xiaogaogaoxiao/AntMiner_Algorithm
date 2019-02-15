@@ -26,7 +26,7 @@ def main():
 
     # K-FOLD CROSS-VALIDATION SETTINGS
     k = 10
-    training_folders, test_folders = k_fold(data, class_attr, k)
+    training_folders, test_folders = k_fold(data, class_attr, n_splits=k, stratified=False)
 
     # GLOBAL VARIABLES
     predictive_accuracy = []
