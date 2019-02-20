@@ -33,16 +33,16 @@ class TermsManager:
         self.__availability = {}.fromkeys(attrs)
         for attr, values in attr_values.items():
             list_of_values = []
-            sub_dict = {}.fromkeys(values)
+            values_dict = {}.fromkeys(values)
             for value in values:
                 term_obj = Term(attr, value, dataset, min_case_per_rule)
                 if term_obj.available():
-                    sub_dict[value] = term_obj
+                    values_dict[value] = term_obj
                     list_of_values.append(value)
                     self.__no_of_terms += 1
                     heuristic_accum += term_obj.get_heuristic()
                 else:
-                    sub_dict.pop(value, None)
+                    values_dict.pop(value, None)
 
             if not list_of_values:
                 self.__terms.pop(attr)
@@ -51,7 +51,7 @@ class TermsManager:
                 self.__attr_values.pop(attr, None)
                 self.__availability.pop(attr, None)
             else:
-                self.__terms[attr] = sub_dict
+                self.__terms[attr] = values_dict
                 self.__attr_values[attr] = list_of_values[:]
                 self.__availability[attr] = True
 
@@ -95,6 +95,19 @@ class TermsManager:
 
         return
 
+    def __get_probabilities(self):
+
+        prob_accum = self.__get_prob_accum()
+        probabilities = []
+
+        for attr, values in self.__attr_values.items():
+            if self.__availability[attr]:
+                for value in values:
+                    prob = (self.__heuristic_table[attr][value] * self.__pheromone_table[attr][value]) / prob_accum
+                    probabilities.append((prob, self.__terms[attr][value]))
+
+        return probabilities
+
     def size(self):
         return self.__no_of_terms
 
@@ -106,6 +119,26 @@ class TermsManager:
                     return True
 
         return False
+
+    def new_sort_term(self):
+
+        probabilities = self.__get_probabilities()
+
+        c_log_file = "log_rule-construct.txt"
+        f = open(c_log_file, "a+")
+        f.write('\n\n>> New sort_term Function <<')
+        f.write('\n\n> Probabilities: ' + repr(probabilities))
+        f.close()
+
+        probs = [prob[0] for prob in probabilities]
+        choice_idx = np.random.choice(len(probabilities), size=1, p=probs)[0]
+
+        f = open(c_log_file, "a+")
+        f.write('\n\n> Index sorted from probabilities list: ' + repr(choice_idx))
+        f.write('\n\n> Term sorted: ' + repr(probabilities[choice_idx]))
+        f.close()
+
+        return probabilities[choice_idx][1]
 
     def sort_term(self):
         c_log_file = "log_rule-construct.txt"

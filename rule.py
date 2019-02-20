@@ -128,7 +128,7 @@ class Rule:
                 f.close()
                 break
 
-            term = terms_mgr.sort_term()
+            term = terms_mgr.new_sort_term()
             if term is None:
                 print("Error: sorted term is None")
             covered_cases = list(set(term.covered_cases) & set(self.covered_cases))
