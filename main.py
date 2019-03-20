@@ -20,14 +20,14 @@ def main():
     log_file = "log_main.txt"
     ac_log_file = "log_accuracy-measure.txt"
     header = list(pd.read_csv('datasets/tic-tac-toe_header.txt', delimiter=','))
-    data = pd.read_csv('datasets/new_tic-tac-toe_data_equalized.txt', delimiter=',', header=None, names=header, index_col=False)
+    data = pd.read_csv('datasets/tic-tac-toe_data.txt', delimiter=',', header=None, names=header, index_col=False)
     class_attr = 'Class'
 
     #data = data_analysis(data)
 
     # K-FOLD CROSS-VALIDATION SETTINGS
     k = 10
-    training_folders, test_folders = k_fold(data, class_attr, n_splits=k, stratified=True)
+    training_folders, test_folders = k_fold(data, class_attr, n_splits=k, stratified=False)
 
     # GLOBAL VARIABLES
     predictive_accuracy = []
